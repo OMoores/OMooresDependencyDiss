@@ -1,0 +1,39 @@
+<?xml version="1.0"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+<xs:element name = "materials">
+    <xs:complexType>
+        <xs:sequence>
+            <xs:element maxOccurs="unbounded" name = "material">
+                <xs:complexType>
+                    <xs:sequence>
+
+                        <xs:element name="fileName" type = "xs:string"/>
+                        <xs:element minOccurs="0" name="fileLink" type = "xs:string"/>
+
+                        <xs:element name="tags">
+                            <xs:complexType>
+                                <xs:sequence>
+                                    <xs:element minOccurs = "0" maxOccurs="unbounded" name = "tag" type="xs:string"/>
+                                </xs:sequence>
+                            </xs:complexType>
+                        </xs:element>
+
+                        <xs:element minOccurs="0" name = "dependencies">
+                            <xs:complexType>
+                                <xs:sequence>
+                                    <xs:element minOccurs = "0" maxOccurs = "unbounded" name = "requires" type="xs:string"/>
+                                    <xs:element minOccurs = "0" maxOccurs="unbounded" name = "optional" type="xs:string"/>
+                                    <xs:element minOccurs = "0" maxOccurs="unbounded" name = "relatedTo" type="xs:string"/>
+                                </xs:sequence>
+                            </xs:complexType>
+                        </xs:element>
+
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+</xs:element>
+
+</xs:schema>

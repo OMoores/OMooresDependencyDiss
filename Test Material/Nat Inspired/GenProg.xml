@@ -1,0 +1,80 @@
+<materials>
+    <material>
+        <fileName>Genetic Programming</fileName>
+        <tags>
+            <tag>Lecture</tag>
+        </tags>
+        <dependencies>
+            <requires>Evolutionary Algorithms Encoding and Representation</requires>
+            <requires>Workshop 3</requires>
+        </dependencies>    
+    </material>
+    
+
+    <material>
+        <fileName>Evolutionary Algorithms Encoding and Representation</fileName>
+        <tags>
+            <tag>Lecture</tag>
+        </tags>
+        <dependencies>
+            <requires>Evolutionary Algorithms</requires>
+            <requires>Workshop 2</requires>
+        </dependencies> 
+    </material>
+
+    <material>
+        <fileName>Evolutionary Algorithms</fileName>
+        <tags>
+            <tag>Lecture</tag>
+        </tags>
+        <dependencies>
+            <requires>Introduction for Evolutionary Algorithms</requires>
+            <requires>Search Landscape</requires>
+        </dependencies> 
+    </material>
+
+    <material>
+        <fileName>Introduction for Evolutionary Algorithms</fileName>
+        <tags>
+            <tag>Lecture</tag>
+        </tags>
+    </material>
+    
+    <material>
+        <fileName>Search Landscape</fileName>
+        <tags>
+            <tag>Lecture</tag>
+        </tags>
+        <dependencies>
+            <requires>Workshop 1</requires>
+        </dependencies> 
+    </material>
+
+    <material>
+        <fileName>Workshop 3</fileName>
+        <tags>
+            <tag>Workshop</tag>
+        </tags>
+        <dependencies>
+            <requires>Evolutionary Algorithms Encoding and Representation</requires>
+        </dependencies> 
+    </material>
+
+    <material>
+        <fileName>Workshop 2</fileName>
+        <tags>
+            <tag>Workshop</tag>
+        </tags>
+        <dependencies>
+            <requires>Evolutionary Algorithms</requires>
+        </dependencies> 
+    </material>
+
+    <material>
+        <fileName>Workshop 1</fileName>
+        <tags>
+            <tag>Workshop</tag>
+        </tags>
+    </material>
+
+</materials>
