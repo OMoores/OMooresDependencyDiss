@@ -4,14 +4,28 @@ import xml.etree.ElementTree as etree
 
 class Material(): 
     materialNum = 0
+    materialDict = {}
+    """ A dictionary holding all materials created materialNum : Material"""
+    materialNameDict = {}
 
     def __init__(self,xmlMaterial):
         self.xmlTree = xmlMaterial
-
+        self.dependencies = []
+        """
+            A list of materials this material is dependent on
+        """
         self.materialNum = Material.materialNum
+        """
+            The number that will represent this material in pysat clauses
+        """
         Material.materialNum += 1
 
-        self.name = xmlMaterial[0].text
+        try:
+            self.name = xmlMaterial[0].text
+
+        except:
+            self.name = ""
+
 
         try:
             self.tags = self.parseTags(xmlMaterial[1])
@@ -25,6 +39,10 @@ class Material():
         except:
             print("No dependencies")
             self.dependencies = []
+
+        Material.materialDict[self.materialNum] = self
+        Material.materialNameDict[self.name] = self.materialNum
+
 
 
     def parseTags(self, xmlTags):
@@ -41,25 +59,25 @@ class Material():
 
     def parseDependencies(self, xmlDependencies):
         """
-            Takes the dependencies section of an XML file and turns it into a list of dependencies
+            Takes the dependencies section of an XML file and turns it into a list of dependencies => Filenames
         """
-
         dependencyList = []
 
         for child in xmlDependencies:
+ 
             dependencyList.append(child.text)
 
         return dependencyList
 
-    def getDependencyClause(self):
+    def getDependencyClause(self): # RETURNS NAMES NOT NUMBERS
         """
             Looks at the dependencies for the object and returns a dependency clause that can be used with pysat
         """
         
         clause = []
 
-        for dependency in self.dependencies:
-            clause.append(materialDict[dependency])
+        for dependencyName in self.dependencies:
+            clause.append(Material.materialNameDict[dependencyName])
 
         return clause
     
@@ -70,10 +88,28 @@ class Material():
 
         clauses = self.getDependencyClause()
 
-        # Add two clauses together
-        clauses.append(previousClauses)
+        if len(clauses) == 0:
+            return clauses
+        if len(previousClauses) == len(Material.removeDuplicates(clauses + previousClauses)):
+            return Material.removeDuplicates(clauses + previousClauses)
+        
+        clauses = Material.removeDuplicates(clauses + previousClauses)
+        
+        # Find dependencies that are not in previous clauses 
+        newDependencies = Material.findItemsNotInA(previousClauses,clauses)
 
-        # Remove any duplicate materials
+        tempDep = []
+        # For every new dependency find their dependencies
+        for dep in newDependencies:
+            tempDep += Material.getDependencies(Material.materialDict[dep], clauses)
+
+        newDependencies += Material.findItemsNotInA(newDependencies,tempDep)
+
+        # Return new dependencies 
+        return newDependencies
+
+        
+    
 
     def removeDuplicates(list):
         """
@@ -89,6 +125,27 @@ class Material():
         
 
         return list
+    
+    def findItemsNotInA(A,B): # TODO
+        """
+            Returns a list of items in B that are not in A
+        """
+
+        returnSet = []
+
+        # Look through every item in B and see if it is in A
+        for AItem in B:
+            inA = False
+            for BItem in A:
+                if AItem == BItem:
+                    inA = True
+            
+            if not inA:
+                returnSet.append(AItem)
+        
+        return returnSet
+                    
+
 
     def removeDuplicate(list, duplicate):
         """
@@ -111,6 +168,7 @@ class Material():
 
         return list
     
+
     
 
 
@@ -129,23 +187,14 @@ materialArray = []
 for child in root:
     materialArray.append(Material(child))
 
-# Create a dictionary with the material and its number
-materialDict = {}
-for mat in materialArray:
-    materialDict[mat.name] = mat.materialNum
 
-clauses = []
 
-for mat in materialArray:
-    clauses.append(mat.getDependencyClause())
-
-clauses = list(filter(lambda clause: (len(clause) > 0), clauses))
-print(clauses)
 
 g = Glucose3()
 
-list = [1,2,2,2,1,1,4,5,6,3,4,5,4]
-print(Material.removeDuplicates(list))
+print(materialArray[6].name)
+for item in materialArray[6].getDependencies():
+    print(Material.materialDict[item].name)
 
 
 
