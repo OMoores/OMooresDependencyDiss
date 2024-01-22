@@ -2,12 +2,60 @@ from pysat.formula import CNF
 from pysat.solvers import Glucose3
 import xml.etree.ElementTree as etree
 
-class Material(): 
+class Dependency:
+    """
+        An object representing a dependency, the highest priority dependancy has a priority of 0
+    """
+
+
+    dependencyDict = {}
+    """ A list holding the priorities of all dependencies """
+    dependencyPriorityDict = {}
+    """ A dictionary mapping priority level to dependency type, priority : [list of dep types] """
+
+    def __init__(self, name : str, priority : int):
+        self.name = name
+        self.priority = priority
+
+        Dependency.dependencyDict[self.name] = self.priority
+        Dependency.dependencyPriorityDict[self.priority] = [self] + Dependency.dependencyPriorityDict[self.priority]
+
+    def getPriorityDependencyTypes(priority):
+        """
+            Returns all types of dependencies that are of greater or equal priority
+        """
+
+        depTypeList : list[Dependency] = []
+
+        # Looks through each priority level higher then the more imp
+        for i in range(0, priority):
+            depTypeList += Dependency.dependencyPriorityDict[i]
+
+        return depTypeList
+
+
+
+
+
+
+
+
+
+
+
+
+class Material: 
+    """
+        An object representing a piece of learning material
+    """
+
+
     materialNum = 0
     materialDict = {}
-    """ A dictionary holding all materials created materialNum : Material"""
+    """ A dictionary holding all materials created materialNum : Material """
     materialNameDict = {}
-    """ A dictionary holding all the names of all materials created materialName : materialNum"""
+    """ A dictionary holding all the names of all materials created materialName : materialNum """
+    
 
     def __init__(self,xmlMaterial):
         self.xmlTree = xmlMaterial
@@ -110,6 +158,13 @@ class Material():
         num = Material.materialNameDict[name]
 
         return Material.getUsingMaterialNum[num]
+    
+    def getPriorityDependencies(self, dependencyType : Dependency):
+        """
+            Gets all dependencies for this object that are of the type provided or a higher priority
+        """
+
+
     
 def parseXMLFiles(xmlList : list[str]) -> list[Material]:
     """

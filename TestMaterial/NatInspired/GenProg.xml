@@ -6,7 +6,7 @@
         </tags>
         <dependencies>
             <requires>Evolutionary Algorithms Encoding and Representation</requires>
-            <requires>Workshop 3</requires>
+            <optional>Workshop 3</optional>
         </dependencies>    
     </material>
     
@@ -18,7 +18,7 @@
         </tags>
         <dependencies>
             <requires>Evolutionary Algorithms</requires>
-            <requires>Workshop 2</requires>
+            <recommends>Workshop 2</recommends>
         </dependencies> 
     </material>
 
@@ -56,7 +56,7 @@
             <tag>Workshop</tag>
         </tags>
         <dependencies>
-            <requires>Evolutionary Algorithms Encoding and Representation</requires>
+            <recommends>Evolutionary Algorithms Encoding and Representation</recommends>
         </dependencies> 
     </material>
 

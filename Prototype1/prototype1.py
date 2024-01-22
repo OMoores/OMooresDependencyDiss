@@ -2,7 +2,7 @@ from pysat.formula import CNF
 from pysat.solvers import Glucose3
 import xml.etree.ElementTree as etree
 
-class Material(): 
+class Material: 
     materialNum = 0
     materialDict = {}
     """ A dictionary holding all materials created materialNum : Material"""
