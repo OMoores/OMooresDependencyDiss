@@ -17,8 +17,14 @@ class Dependency:
         self.name = name
         self.priority = priority
 
+
         Dependency.dependencyDict[self.name] = self.priority
-        Dependency.dependencyPriorityDict[self.priority] = [self] + Dependency.dependencyPriorityDict[self.priority]
+
+        # If a dependency type of this priority already exists, adds this dependency type to a list with already existing ones, if not creates a list with only this type in
+        try:
+            Dependency.dependencyPriorityDict[self.priority] = Dependency.dependencyPriorityDict[self.priority].append(self)
+        except:
+            Dependency.dependencyPriorityDict[self.priority] = [self]
 
     def getPriorityDependencyTypes(priority):
         """
@@ -28,11 +34,19 @@ class Dependency:
         depTypeList : list[Dependency] = []
 
         # Looks through each priority level higher then the more imp
-        for i in range(0, priority):
+        for i in range(0, priority + 1):
             depTypeList += Dependency.dependencyPriorityDict[i]
 
         return depTypeList
 
+    def setUpDependencies():
+        """
+            Creates some basic dependency types
+        """
+
+        Dependency("requires",0)
+        Dependency("recommends",1)
+        Dependency("optional",2)
 
 
 
@@ -134,14 +148,15 @@ class Material:
         """
             Returns the directDependencies of this object as a list of material objects
             In future versions will need to account for not being able to find a material
+            [Material, priority]
         """
 
+        dirDeps = []
         # Returns the dependency array after replacing every name with the materials associated object
-        dirDeps = self.dependencies.map( lambda dep : [Material.getUsingMaterialName(dep[0]), dep[1]])
+        for dep in self.dependencies:
+            dirDeps.append([Material.getUsingMaterialName(dep[0]), dep[1]])
 
         return dirDeps
-        
-
 
     def getUsingMaterialNum(num):
         """
@@ -157,12 +172,103 @@ class Material:
 
         num = Material.materialNameDict[name]
 
-        return Material.getUsingMaterialNum[num]
+        return Material.getUsingMaterialNum(num)
+
+
+
+    def getDependencies(self, dependencyType, previousClauses = []):
+        """
+            Gets all dependencies from this material, including dependencies of dependencies
+        """
+
+        dirClause = self.getDirectDependencies() # A list of [Material, priority]
+
+        clauses = []
+        # Remove items of insufficient priority
+        for dep in dirClause:
+            
+            depPriority = Dependency.dependencyDict[dep[1]]
+
+            if depPriority <= dependencyType[0].priority:
+                clauses.append(dep)
+
+        if len(clauses) == 0:
+            return clauses
+        if len(previousClauses) == len(Material.removeDuplicates(clauses + previousClauses)):
+            return Material.removeDuplicates(clauses + previousClauses)
+        
+        clauses = Material.removeDuplicates(clauses + previousClauses)
+        
+        # Find dependencies that are not in previous clauses 
+        newDependencies = Material.findItemsNotInA(previousClauses,clauses)
+
+        tempDep = []
+        # For every new dependency find their dependencies
+        for dep in newDependencies:
+            tempDep += Material.getDependencies(Material.materialDict[dep[0].materialNum], dependencyType, clauses)
+
+        newDependencies += Material.findItemsNotInA(newDependencies,tempDep)
+
+        # Return new dependencies 
+        return newDependencies
     
-    def getPriorityDependencies(self, dependencyType : Dependency):
+    
+    def removeDuplicates(list):
         """
-            Gets all dependencies for this object that are of the type provided or a higher priority
+            Removes duplicate items from a list
         """
+
+        returnList = list
+        for item in list:
+            returnList = Material.removeDuplicate(list, item)
+
+        return returnList
+
+        
+
+        return list
+    
+    def findItemsNotInA(A,B): # TODO
+        """
+            Returns a list of items in B that are not in A
+        """
+
+        returnSet = []
+
+        # Look through every item in B and see if it is in A
+        for AItem in B:
+            inA = False
+            for BItem in A:
+                if AItem == BItem:
+                    inA = True
+            
+            if not inA:
+                returnSet.append(AItem)
+        
+        return returnSet
+                    
+
+
+    def removeDuplicate(list, duplicate):
+        """
+            Checks list for item and removes all but the first instance of this item
+        """
+
+        # Has the first occurence of the item been found
+        found = False
+
+        # Looks through every item in list and checks if it is the same as the duplicate
+        index = 0
+        while index < len(list):
+            if list[index] == duplicate:
+
+                if found == True:
+                    list.pop(index)
+                    continue
+                found = True
+            index +=1
+
+        return list
 
 
     
@@ -189,6 +295,9 @@ def parseXMLFiles(xmlList : list[str]) -> list[Material]:
 
 
 matList = parseXMLFiles(["./TestMaterial/NatInspired/GenProg.xml"])
+Dependency.setUpDependencies()
 
-for item in matList:
-    print(item.name)
+list = matList[0].getDependencies(Dependency.getPriorityDependencyTypes(0))
+
+for item in list:
+    print(item[0].name, item[1])
