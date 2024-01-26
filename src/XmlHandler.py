@@ -1,5 +1,5 @@
-from Material import Material
-from Debug import Debug
+from src.Material import *
+from src.Debug import *
 import xml.etree.ElementTree as etree
 
 class XmlHandler:

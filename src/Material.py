@@ -1,5 +1,6 @@
-from Debug import Debug
-from Utility import Utility
+# Importing Index
+from src.Debug import *
+from src.Utility import *
 
 class Material:
     """
@@ -81,3 +82,4 @@ class Material:
         """
         ...
 
+print(Material("AEIOU",["d"]))
