@@ -2,7 +2,7 @@ class Utility:
 
     def isAinB(A, B : []) -> bool:
         """
-            Takes a var and a list then returns true if A is in B and false if it is not
+            Takes a var and a list then returns true if A is in B and false if it is not, converts all values to str before checking them
 
             Params:
             - A : A variable 
@@ -12,7 +12,7 @@ class Utility:
         """
 
         for item in B:
-            if A == item:
+            if str(A) == str(item):
                 return True
             
         return False

@@ -12,7 +12,7 @@ class Material:
         - tags
         - dependencies
     """
-    id = 0
+    nextId = 0
 
     def __init__(self, name : str, tags : [str] = []):
         """
@@ -22,11 +22,18 @@ class Material:
         """
 
         self.name = self.setName(name)
-        self.id = Material.id
-        Material.id += 1
-        self.tags = []
+        self.id = Material.nextId
+        self.tags = [] # Initialise tags variable
         self.addTags(tags)
         self.dependencies = [] 
+        self.tempDep = [] # A variable used to hold the dependencies from the xml file (strings)
+
+        Debug.printLowPriority("Material being initialised, name: ",self.name,", id: ",self.id,", tags: ",self.tags,", dependencies: ",self.dependencies)
+
+
+        Material.nextId += 1
+
+ 
 
 
         
@@ -42,8 +49,7 @@ class Material:
             The name of the material 
 
         """
-        Debug.printNoPriority("Material name being set: ", name)
-
+        Debug.printNoPriority("Material name being set to: ", name)
         self.name = name
 
         return self.name
@@ -58,11 +64,11 @@ class Material:
             Returns:
             The number of tags the material has
         """
-        Debug.printNoPriority("Material tags being added: ", tags)
+        Debug.printNoPriority("Material tags being added: ", tags, " for Material ", self.name)
 
         # Check if tag is already in self.tags
         for tag in tags:
-            if (Utility.isAinB(tag, self.tags)):
+            if (not Utility.isAinB(tag, self.tags)):
                 self.tags.append(tag)
 
         return len(self.tags)
@@ -70,16 +76,22 @@ class Material:
 
     
 
-    def addDependencies(self, dependencies) -> int:
+    def addDependency(self, dependency) -> int:
         """
-            DECIDE HOW THESE ARE TO BE ADDED
+            Adds a material to the dependency list of this material if a dependency of the same name does not exist
 
             Params:
-                - dependencies : 
+                - dependency : A material object
 
             Returns:
             The number of dependencies the material has
         """
-        ...
 
-print(Material("AEIOU",["d"]))
+        if not Utility.isAinB(dependency, self.dependencies):
+            Debug.printNoPriority("Adding dependency '", dependency.name,"' to Material '",self.name,"'")
+            self.dependencies.append(dependency)
+        else:
+            Debug.printNoPriority("Dependency '", dependency.name,"' already exists in material '",self.name,"'")
+
+        
+        

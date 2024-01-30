@@ -1,0 +1,28 @@
+<materials>
+    <material>
+        <fileName>3</fileName>
+        <tags>
+            <tag>4</tag>
+        </tags>
+        <dependencies>
+            <optional>4</optional>
+        </dependencies>    
+    </material>
+
+    <material>
+        <fileName>4</fileName>
+        <tags>
+            <tag>2</tag>
+            <tag>4</tag>
+            <tag>3</tag>
+            <tag>6</tag>
+        </tags>
+        <dependencies>
+            <requires>6</requires>
+        </dependencies>    
+    </material>
+
+
+
+
+</materials>

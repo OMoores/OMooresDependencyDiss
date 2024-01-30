@@ -1,5 +1,4 @@
 import unittest
-from importlib.machinery import SourceFileLoader
 from src.Material import *
 
 
@@ -13,25 +12,46 @@ class TestMaterial(unittest.TestCase):
         """
 
         material1 = Material("bob")
+        material2 = Material("")
 
         self.assertEqual(material1.name,"bob")
+        self.assertEqual(material2.name, "")
 
-    def setName():
-        ...
+        material3 = Material("achim", ["computer science", "dissertation"])
 
-    def setNameList():
-        ...
+        self.assertEqual(material3.name, "achim")
+        self.assertEqual(material3.tags, ["computer science", "dissertation"])
 
-    def addTag():
-        ...
+    def test_setName(self):
+        """
+            Description: Testing that setName works as intended
 
-    def addTags():
-        ...
+            Expected result: When setName is used on an object its name returns as the value the name is set as
+        """
 
-    def addDuplicateTags():
-        ...
+        material4 = Material("Bob")
+        self.assertEqual(material4.name, "Bob")
+        material4.setName("David Wakeling")
+        self.assertEqual(material4.name, "David Wakeling")
 
-    def addNoTags():
-        ...
+    def test_addTags(self):
+        """
+            Description: Testing that addTags works as intended
+
+            Expected result: When addTags is called the list of tags of an object includes any new tags, duplicate tags are not added
+        """
+        material5 = Material("Matt Collinson", ["Man"])
+        self.assertEqual(material5.tags, ["Man"])
+
+        # Testing adding new tags
+        material5.addTags(["Computer science", "HTML"])
+        self.assertEqual(material5.tags, ["Man","Computer science", "HTML"])
+
+        # Testing adding tags that already exist
+        material5.addTags(["Man", "CSS", "HTML", "Computer science"])
+        self.assertEqual(material5.tags, ["Man","Computer science", "HTML", "CSS"])
+
+
+        
 
     

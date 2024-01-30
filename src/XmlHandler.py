@@ -1,3 +1,5 @@
+from os import error
+from uu import Error
 from src.Material import *
 from src.Debug import *
 import xml.etree.ElementTree as etree
@@ -22,23 +24,33 @@ class XmlHandler:
         # Look at every xml file and create a lists of every material
         for path in xmlPathList:
 
-            tree = etree.parse(path)
+            Debug.printNoPriority("Reading file: ", path)
 
-            root = tree.getroot() # The Materials section of the xml file
+            try:
+                tree = etree.parse(path)
+                root = tree.getroot() # The Materials section of the xml file
+            except:
+                Debug.printHighPriority("File ",path," is not a valid xml files")
+                raise(Error)
+
+
 
             for child in root: # Each child is a material
                 material = XmlHandler.initMaterial(child)
 
                 # Checking to see if a material with the same name exists in materialNameDict
                 if material.name in materialNameDict: 
-                    Debug.printLowPriority(str("Material ",material.name," already exists"))
+                    Debug.printLowPriority("Material ",material.name," already exists")
+                    raise(Error)
                 else:
                     # If a material with this name does not exist then adds material to dictionary with no issues
                     materialNameDict[material.name] = material
 
+        materialNameDict = XmlHandler.setDependencies(materialNameDict)
+
 
         # Return list of materials -> Only the values of the materialNameDict
-        return materialNameDict.values()        
+        return list(materialNameDict.values())        
 
     def initMaterial(child) -> Material:
         """
@@ -50,12 +62,15 @@ class XmlHandler:
         Returns:
         A material with the name and tags from the child input
         """
+        # Name defaults to id
+        mat = Material(Material.nextId)
 
         # Setting name
         try:
-            mat = Material(child[0])
+            mat.setName(child[0].text)
         except:
             Debug.printMediumPriority("Material has failed to created, could not read name: ", child)
+
 
         # Setting tags
         try:
@@ -64,10 +79,48 @@ class XmlHandler:
             for tag in child[1]:
                 tagList.append(tag.text)
 
-            mat.addTags(child[1])
+            mat.addTags(tagList)
         except:
             Debug.printMediumPriority("Material has failed to add tags: ", mat.name)
+
+        # Adding dependencies in string form
+        try:
+            # Looking through every tag in dependency tag and adding their text -> Will be used later to find actual dependencies
+            for dep in child[2]:
+                mat.tempDep.append(dep.text)
+        except:
+            ...
         
-        
+
+        return mat
+
+    def setDependencies(materialDict : {str : Material}) -> {str : Material}:
+        """
+        Params:
+            - materialDict : A dictionary name : Material
+
+        Return:
+        A dictionary containing materials with all their dependencies set
+        """ 
+
+        # A clone of the dictionary, this will be returned
+        returnDict = materialDict.copy()
+
+        # Look through every item
+        for mat in materialDict.values():
+            for strDep in mat.tempDep:
+                Debug.printNoPriority("Setting dependency for ",mat.name," adding dependency '",strDep,"'")
+                # Checking to see if dependency exists
+                if returnDict.get(strDep) is not None:
+                    mat.addDependency(returnDict[strDep])
+                else:
+                    Debug.printLowPriority("Could not find material '",strDep,"' for dependency, creating placeholder material")
+                    # If material does not exist create it with placeholder tag
+                    returnDict[strDep] = Material(strDep)
+                    returnDict[strDep].addTags(["placeholder"])
+
+        Debug.printNoPriority("Setting dependencies. Current materialDict: ", materialDict.values())
+
+        return returnDict
 
 

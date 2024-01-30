@@ -4,29 +4,29 @@
         <tags>
             <tag>2</tag>
             <tag>4</tag>
+        </tags>
+        <dependencies>
+            <requires>3</requires>
+        </dependencies>    
+    </material>
+    <material>
+        <fileName>4</fileName>
+        <tags>
+            <tag>2</tag>
+            <tag>4</tag>
             <tag>3</tag>
             <tag>6</tag>
         </tags>
         <dependencies>
-            <requires>6</requires>
         </dependencies>    
     </material>
-
     <material>
-        <fileName>5</fileName>
+        <fileName>3</fileName>
         <tags>
-            <tag>5</tag>
+            <tag>4</tag>
         </tags>
         <dependencies>
-        </dependencies>    
-    </material>
-
-    <material>
-        <fileName>6</fileName>
-        <tags>
-            <tag>6</tag>
-        </tags>
-        <dependencies>
+            <optional>4</optional>
         </dependencies>    
     </material>
 </materials>
