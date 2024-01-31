@@ -87,7 +87,7 @@ class XmlHandler:
         try:
             # Looking through every tag in dependency tag and adding their text -> Will be used later to find actual dependencies
             for dep in child[2]:
-                mat.tempDep.append(dep.text)
+                mat.tempDep.append([dep.text, dep.tag])
         except:
             ...
         
@@ -109,15 +109,15 @@ class XmlHandler:
         # Look through every item
         for mat in materialDict.values():
             for strDep in mat.tempDep:
-                Debug.printNoPriority("Setting dependency for ",mat.name," adding dependency '",strDep,"'")
+                Debug.printNoPriority("Setting dependency for ",mat.name," adding dependency '",strDep[0],"' at level ", strDep[1])
                 # Checking to see if dependency exists
-                if returnDict.get(strDep) is not None:
-                    mat.addDependency(returnDict[strDep])
+                if returnDict.get(strDep[0]) is not None:
+                    mat.addDependency(returnDict[strDep[0]],strDep[1]) # Getting the material object and parsing the dependency level
                 else:
                     Debug.printLowPriority("Could not find material '",strDep,"' for dependency, creating placeholder material")
                     # If material does not exist create it with placeholder tag
-                    returnDict[strDep] = Material(strDep)
-                    returnDict[strDep].addTags(["placeholder"])
+                    returnDict[strDep[0]] = Material(strDep[0])
+                    returnDict[strDep[0]].addTags(["placeholder"])
 
         Debug.printNoPriority("Setting dependencies. Current materialDict: ", materialDict.values())
 

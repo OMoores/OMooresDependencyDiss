@@ -27,7 +27,7 @@ class TestParseXmlFiles(unittest.TestCase):
         self.assertEqual(materials[2].tags,['6'])
 
         # Checking dependencies 
-        self.assertEqual(materials[0].dependencies, [materials[2]])
+        self.assertEqual(materials[0].dependencies, [[materials[2], 'requires']])
         self.assertEqual(len(materials[1].dependencies), 0)
         self.assertEqual(len(materials[2].dependencies), 0)
 

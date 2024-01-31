@@ -26,7 +26,11 @@ class Material:
         self.tags = [] # Initialise tags variable
         self.addTags(tags)
         self.dependencies = [] 
-        self.tempDep = [] # A variable used to hold the dependencies from the xml file (strings)
+        self.tempDep : [[str,str]] = []  
+        """
+            A variable used to hold the dependency information from the xml file
+            [dependency name, dependency level]
+        """
 
         Debug.printLowPriority("Material being initialised, name: ",self.name,", id: ",self.id,", tags: ",self.tags,", dependencies: ",self.dependencies)
 
@@ -76,12 +80,13 @@ class Material:
 
     
 
-    def addDependency(self, dependency) -> int:
+    def addDependency(self, dependency, dependencyLevel) -> int:
         """
             Adds a material to the dependency list of this material if a dependency of the same name does not exist
 
             Params:
                 - dependency : A material object
+                - dependencyLevel : The level of dependency on a material
 
             Returns:
             The number of dependencies the material has
@@ -89,7 +94,7 @@ class Material:
 
         if not Utility.isAinB(dependency, self.dependencies):
             Debug.printNoPriority("Adding dependency '", dependency.name,"' to Material '",self.name,"'")
-            self.dependencies.append(dependency)
+            self.dependencies.append([dependency,dependencyLevel])
         else:
             Debug.printNoPriority("Dependency '", dependency.name,"' already exists in material '",self.name,"'")
 
