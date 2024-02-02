@@ -7,9 +7,9 @@ class Debug:
     """
         Levels:
             - 0 : Prints out nothing
-            - 1 : Prints out high priority messages
-            - 2 : Prints out medium priority messages
-            - 3 : Prints out low priority messages
+            - 1 : Prints out high priority messages, something has gone wrong
+            - 2 : Prints out medium priority messages, something has gone wrong but will not cause problems
+            - 3 : Prints out low priority messages, something has been added that already exists
             - 4 : Prints out everything 
     """
 

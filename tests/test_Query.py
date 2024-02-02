@@ -7,7 +7,7 @@ from src.Material import Material
 
 class TestQuery(unittest.TestCase):
 
-    def test_solveQueryRequired(self):
+    def test_solveSimpleQueryRequired(self):
         """
             Description: Create a query that selects all materials that are required to learn material 1
 
@@ -34,6 +34,10 @@ class TestQuery(unittest.TestCase):
         self.assertTrue(len(list(filter(lambda x : x == '4', solved))) == 1)
         self.assertTrue(len(list(filter(lambda x : x == '5', solved))) == 1)
 
+    def test_solveComplexQueryRequired(self):
+        """
+            Description: Create a query 
+        """
 
         
         
@@ -80,14 +84,14 @@ class TestClause(unittest.TestCase):
         clause = Clause()
 
         # Test adding no dependency level to an empty clause
-        clause.addDependencyLevel([])
+        clause.addDependencyLevels([])
         self.assertEqual(clause.dependencyLevels, [])
         # Test adding a single dependency level
-        clause.addDependencyLevel(["Apple"]) 
+        clause.addDependencyLevels(["Apple"]) 
         self.assertEqual(clause.dependencyLevels,["Apple"])
         # Testing adding multiple dependency levels
-        clause.addDependencyLevel(["Bannana","Pear"])
+        clause.addDependencyLevels(["Bannana","Pear"])
         self.assertEqual(clause.dependencyLevels, ["Apple","Bannana","Pear"])
         # Testing adding no dependency level
-        clause.addDependencyLevel([])
+        clause.addDependencyLevels([])
         self.assertEqual(clause.dependencyLevels, ["Apple","Bannana","Pear"])

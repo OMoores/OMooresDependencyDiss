@@ -1,6 +1,7 @@
 from numpy import number
-
+from src.Debug import Debug
 from src.Material import Material
+from src.Utility import Utility
 
 
 class Query:
@@ -70,8 +71,68 @@ class Clause:
         Returns:
         The number of tags in this clause
         """
+        Debug.printLowPriority("Tags ",tags," are being added to clause ",self)
+        for tag in tags:
+            self.addTag(tag)
 
+
+        
+
+    def addTag(self, tag : str) -> number:
+        """
+            Adds a single tag to a clause, making sure it is not already in this clause
+        
+            Params:
+                - tag : A tag to be added to the clause
+
+            Returns:
+            The number of tags in this clause
+        """
+
+        # Checks to see tag not already present
+        if (len(list(filter(lambda x : tag == str(x), self.tags))) > 0):
+            Debug.printLowPriority("Tag ",tag," already exists in clause ",self)
+            
+        else: 
+            self.tags.append(tag)
+            Debug.printNoPriority("Tag ",tag," has been added to clause ",self)
+
+        return len(self.tags)
+    
     def addDependencyLevels(self, dependencyLevels : [str]) -> number:
         """
-        Adds a dependency level to the clause
+        Adds a set of dependency levels to the clause, they are only added if they do not already exist in the clause
+
+        Params:
+            -dependencyLevels : A list of dependency levels to be added
+        
+            Returns:
+            The number of dependency levels in the clause
         """
+        Debug.printLowPriority("Dependency levels ",dependencyLevels," are being added to clause ",self)
+        for dep in dependencyLevels:
+            self.addDependencyLevel(dep)
+
+
+
+    def addDependencyLevel(self, dependencyLevel :[str]) -> number:
+        """
+            Adds a dependency level to the clause if it is not already a part of the clause
+
+            Params:
+                - dependencyLevel : A dependency level to be added
+            
+            Returns:
+            The number of dependency levels in this clause
+        """
+
+        # Checks to see tag not already present
+        if (len(list(filter(lambda x : dependencyLevel == str(x), self.tags))) > 0):
+            Debug.printLowPriority("Dependency level ",dependencyLevel," already exists in clause ",self)
+            
+        else: 
+            self.dependencyLevels.append(dependencyLevel)
+            Debug.printNoPriority("Dependency level ",dependencyLevel," has been added to clause ",self)
+
+        return len(self.dependencyLevels)
+

@@ -96,7 +96,7 @@ class Material:
             Debug.printNoPriority("Adding dependency '", dependency.name,"' to Material '",self.name,"'")
             self.dependencies.append([dependency,dependencyLevel])
         else:
-            Debug.printNoPriority("Dependency '", dependency.name,"' already exists in material '",self.name,"'")
+            Debug.printLowPriority("Dependency '", dependency.name,"' already exists in material '",self.name,"'")
 
         
         
