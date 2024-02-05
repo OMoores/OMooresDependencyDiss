@@ -1,60 +1,23 @@
+from typing import Self
 from numpy import number
 from src.Debug import Debug
 from src.Material import Material
 from src.Utility import Utility
-
-
-class Query:
-    """
-        This class will hold a query, when a query is given to the solver the solver returns a set of materials based on the query.
-        A query is made up of a set of clauses linked together by 
-    """
-
-    def __init__(self):
-        """
-            Creates a query
-
-            Attributes:
-                - clauses: A list of clauses that are in the pysat format
-                
-        """
-
-        self.dependencyLevels = [] 
-        """ The levels of dependency this clause applies to """
-
-    def addClauses(clauses : []) -> number:
-        """
-            Adds a clause to the query
-
-            Params:
-                - clause : A clause object
-            
-            Returns:
-            The number of clauses in this query 
-        """
-
-    def solveQuery() -> [Material]:
-        """
-            Returns:
-            A list of materials that the query selects
-        """
-
-        
 
 class Clause:
     """
         This class will hold a clause which makes up part of a query. A clause is made of a set of tags, a set of dependency levels 
 
         A clause selects any item with any of the tags AND any of the dependency levels
+        
+            Attributes:
+                - tags: A list of tags this clause selects
+                - dependencyLevels: A list of dependency levels this clause selects
     """
 
     def __init__(self):
         """
             Creates a clause
-
-            Attributes:
-                - tags: A list of tags this clause selects
-                - dependencyLevels: A list of dependency levels this clause selects
         """
         
         self.tags = []
@@ -136,3 +99,102 @@ class Clause:
 
         return len(self.dependencyLevels)
 
+
+
+class Query:
+    """
+        This class will hold a query, when a query is given to the solver the solver returns a set of materials based on the query.
+        A query is made up of a set of clauses linked together by 
+
+        
+        Attributes:
+            - clauses: A list of clauses that are in the pysat format
+        
+    """
+
+    def __init__(self):
+        """
+            Creates a query 
+        """
+
+        self.clauses = []
+
+    def addClauses(self, clauses : []) -> number:
+        """
+            Adds a list of clauses to the query
+
+            Params:
+                - clause : A clause object
+            
+            Returns:
+            The number of clauses in this query 
+        """
+
+        for clause in clauses:
+            self.addClause(clause)
+
+        return len(self.clauses)
+
+    def addClause(self, clause : Clause) -> number:
+        """
+            Adds a clause to the query
+        """
+
+        Debug.printNoPriority("Adding clause ",clause," to Query ", self)
+
+        self.clauses.append(clause)
+
+    def solveQuery(self, material : Material) -> [Material]:
+        """
+            Returns a list of materials that are valid for this query
+            
+            Params:
+            - material : The material the query is being applied to
+
+            Returns:
+            A list of materials that the query selects
+        """
+    
+        solvedMaterials = []
+        currentMaterials = [material] 
+        """
+            This will hold the materials that are being examined in the main loop, 
+            at the end of the main loop materials that fullfil the clauses of the query will replace the materials in this list and then be examined in the next itteration of the loop
+        """
+
+        # While all possible new dependencies are already in the solved list
+        while Utility.isASubsetB(currentMaterials, solvedMaterials):
+            """
+                This is the main loop of the functions 
+            """
+
+            subMaterials = [] # A list of the sub materials of the current list of materials
+
+            # Look through current materials and check dependencies against clauses to find valid dependencies, then add to subMaterials
+            validMaterials = Query.findValidMaterials(currentMaterials, self)
+            
+            # Create a list of the materials in validMaterials that are not in solvedMaterials -> uniqueMaterials
+            uniqueMaterials = Utility.findAnotinB(validMaterials, solvedMaterials)
+
+            # Add uniqueMaterials to solvedMaterials
+            solvedMaterials += uniqueMaterials
+
+            # Set current materials to the uniqueMaterials
+            currentMaterials = uniqueMaterials  # At the end of the loop set the sub materials to be looked at in the next loop to the applicable materials from this loop
+
+        return solvedMaterials
+
+    def findValidMaterials(materials : [Material], query) -> [Material]:
+        """
+            Checks a set of materials against a query and returns materials that fulfil the query
+
+            Params:
+            - materials : A set of materials
+            - query : A query
+            Returns:
+            A set of materials that fulfil the query
+        """
+
+        ...
+    
+            
