@@ -1,4 +1,3 @@
-from typing import Self
 from numpy import number
 from src.Debug import Debug
 from src.Material import Material
@@ -11,7 +10,7 @@ class Clause:
         A clause selects any item with any of the tags AND any of the dependency levels
         
             Attributes:
-                - tags: A list of tags this clause selects
+                - variables : A list of variables this clause selects -> A variable has the form ["tag1","tag2"] and will result in materials with tag1 AND tag2 being selected (can have as many tags as you want per variable)
                 - dependencyLevels: A list of dependency levels this clause selects
     """
 
@@ -20,47 +19,47 @@ class Clause:
             Creates a clause
         """
         
-        self.tags = []
+        self.variables = [] # Variables are a set of tags that are linked together by an AND
         self.dependencyLevels = []
 
 
-    def addTags(self, tags : [str]) -> number:
+    def addVariables(self, variables : [[str]]) -> number:
         """
-        Adds a list of tags to the clause, making sure there are no duplicate tags added
+        Adds a list of variables to the clause, making sure there are no duplicate variables added
 
         Params:
-            - tags : A list of tags that are to be added to this clause
+            - var : A list of variables that are to be added to this clause
 
         Returns:
-        The number of tags in this clause
+        The number of variables in this clause
         """
-        Debug.printLowPriority("Tags ",tags," are being added to clause ",self)
-        for tag in tags:
-            self.addTag(tag)
+        Debug.printLowPriority("Variables ",variables," are being added to clause ",self)
+        for var in variables:
+            self.addVariable(var)
 
 
         
 
-    def addTag(self, tag : str) -> number:
+    def addVariable(self, var : [str]) -> number:
         """
             Adds a single tag to a clause, making sure it is not already in this clause
         
             Params:
-                - tag : A tag to be added to the clause
+                - var : A variable to be added to the clause
 
             Returns:
-            The number of tags in this clause
+            The number of variables in this clause
         """
 
         # Checks to see tag not already present
-        if (len(list(filter(lambda x : tag == str(x), self.tags))) > 0):
-            Debug.printLowPriority("Tag ",tag," already exists in clause ",self)
+        if (len(list(filter(lambda x : var == str(x), self.variables))) > 0):
+            Debug.printLowPriority("Tag ",var," already exists in clause ",self)
             
         else: 
-            self.tags.append(tag)
-            Debug.printNoPriority("Tag ",tag," has been added to clause ",self)
+            self.variables.append(var)
+            Debug.printNoPriority("Tag ",var," has been added to clause ",self)
 
-        return len(self.tags)
+        return len(self.variables)
     
     def addDependencyLevels(self, dependencyLevels : [str]) -> number:
         """
@@ -89,8 +88,8 @@ class Clause:
             The number of dependency levels in this clause
         """
 
-        # Checks to see tag not already present
-        if (len(list(filter(lambda x : dependencyLevel == str(x), self.tags))) > 0):
+        # Checks to see dependency level not already present
+        if (len(list(filter(lambda x : dependencyLevel == str(x), self.dependencyLevels))) > 0):
             Debug.printLowPriority("Dependency level ",dependencyLevel," already exists in clause ",self)
             
         else: 
@@ -195,6 +194,38 @@ class Query:
             A set of materials that fulfil the query
         """
 
-        ...
+        # Look through every material
+        for mat in materials:
+
+            # Look through each dependency
+            for dep in materials.dependencies:
+
+                # For each dependency look through each clause
+                for clause in query:
+
+                    # Check to see if dependency fulfils any of the clauses
+                    for tag in dep.tags:
+                        ...
+
     
+    def isMaterialValid(dependency : [Material, str], query) -> bool:
+        """
+            Checks to see if a material is valid acording to a query
+
+            Params:
+            - dependency : A dependency from a material [Material, dependencyLevel]
+            - query : A query
+            Returns:
+            A boolean representing if the material fulfils the query
+        """
+
+        return False
+
+
+
+
+
+
+
+
             

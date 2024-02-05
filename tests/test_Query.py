@@ -21,7 +21,7 @@ class TestQuery(unittest.TestCase):
 
         # Create a clause that selects all required dependencies 
         clause = Clause()
-        clause.addTags(["*"]) # This should select every tag
+        clause.addVariables(["*"]) # This should select every tag
         clause.addDependencyLevels(["requires"]) # Select every required dependency
         query.addClauses([clause])
 
@@ -38,6 +38,11 @@ class TestQuery(unittest.TestCase):
         """
             Description: Create a query 
         """
+
+    def test_isMaterialValid(self):
+
+
+
 
         
         
@@ -60,17 +65,17 @@ class TestClause(unittest.TestCase):
         clause = Clause()
 
         # Test adding no tag to an empty clause
-        clause.addTags([])
-        self.assertEqual(clause.tags, [])
+        clause.addVariables([])
+        self.assertEqual(clause.variables, [])
         # Test adding a single tag
-        clause.addTags(["Apple"]) 
-        self.assertEqual(clause.tags,["Apple"])
+        clause.addVariables([["Apple"]]) 
+        self.assertEqual(clause.variables,[["Apple"]])
         # Testing adding multiple tags
-        clause.addTags(["Bannana","Pear"])
-        self.assertEqual(clause.tags, ["Apple","Bannana","Pear"])
+        clause.addVariables([["Bannana","Pear"]])
+        self.assertEqual(clause.variables, [["Apple"],["Bannana","Pear"]])
         # Testing adding no tags
-        clause.addTags([])
-        self.assertEqual(clause.tags, ["Apple","Bannana","Pear"])
+        clause.addVariables([])
+        self.assertEqual(clause.variables, [["Apple"],["Bannana","Pear"]])
 
         
 
