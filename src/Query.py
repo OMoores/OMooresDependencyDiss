@@ -1,3 +1,4 @@
+from re import T
 from numpy import number
 from src.Debug import Debug
 from src.Material import Material
@@ -5,12 +6,13 @@ from src.Utility import Utility
 
 class Clause:
     """
-        This class will hold a clause which makes up part of a query. A clause is made of a set of tags, a set of dependency levels 
+        This class will hold a clause which makes up part of a query. A clause is made of a set of variables and a set of dependency levels 
+        A clause is true if all of the variables are true
 
         A clause selects any item with any of the tags AND any of the dependency levels
         
             Attributes:
-                - variables : A list of variables this clause selects -> A variable has the form ["tag1","tag2"] and will result in materials with tag1 AND tag2 being selected (can have as many tags as you want per variable)
+                - variables : A list of variables this clause selects -> A variable has the form ["tag1","tag2"] and will result in materials with tag1 OR tag2 being selected (can have as many tags as you want per variable)
                 - dependencyLevels: A list of dependency levels this clause selects
     """
 
@@ -28,7 +30,7 @@ class Clause:
         Adds a list of variables to the clause, making sure there are no duplicate variables added
 
         Params:
-            - var : A list of variables that are to be added to this clause
+            - var : A list of variables that are to be added to this clause, a list of tags (str)
 
         Returns:
         The number of variables in this clause
@@ -45,7 +47,7 @@ class Clause:
             Adds a single tag to a clause, making sure it is not already in this clause
         
             Params:
-                - var : A variable to be added to the clause
+                - var : A variable to be added to the clause, a list of tags (str)
 
             Returns:
             The number of variables in this clause
@@ -123,7 +125,7 @@ class Query:
             Adds a list of clauses to the query
 
             Params:
-                - clause : A clause object
+                - clauses : A clause object
             
             Returns:
             The number of clauses in this query 
@@ -185,7 +187,8 @@ class Query:
 
     def findValidMaterials(materials : [Material], query) -> [Material]:
         """
-            Checks a set of materials against a query and returns materials that fulfil the query
+            Checks a set of materials against a query and returns materials that fulfil the query, does not return any materials in the materials parameter
+            e.g. materials = [A,B], valid materials are [B,C,D] returns [C,D]
 
             Params:
             - materials : A set of materials
@@ -193,24 +196,27 @@ class Query:
             Returns:
             A set of materials that fulfil the query
         """
+        validMaterialList = []
 
         # Look through every material
         for mat in materials:
-
+                        
             # Look through each dependency
-            for dep in materials.dependencies:
+            for dep in mat.dependencies:
 
-                # For each dependency look through each clause
-                for clause in query:
+                # If material is valid and not already in return list add to return list
+                if Query.isMaterialValid(dep, query) & Utility.isAinB(dep[0], validMaterialList):
+                    validMaterialList.append(dep[0])
 
-                    # Check to see if dependency fulfils any of the clauses
-                    for tag in dep.tags:
-                        ...
+
+        return validMaterialList
 
     
     def isMaterialValid(dependency : [Material, str], query) -> bool:
         """
             Checks to see if a material is valid acording to a query
+            
+            If the dependency levels are not valid returns false, then checks to see if any variables are false if none are returns true 
 
             Params:
             - dependency : A dependency from a material [Material, dependencyLevel]
@@ -219,8 +225,79 @@ class Query:
             A boolean representing if the material fulfils the query
         """
 
+        # Query -> Clause -> Variable -> Tag
+
+        # For each clause in query
+        for clause in query.clauses:
+            # Check to see if valid dependency level
+            if not Query.isDependencyValid(dependency[1], clause):
+                return False
+
+            # Check to see status of each variable
+            for variable in clause.variables:
+                if not Query.isVariableTrue(variable, dependency[0]): # If variable is not valid then the material is not valid
+                    return False
+                
+        return True               
+
+        
+    
+    def isVariableTrue(variable : [str], material : Material) -> bool:
+        """
+        Checks to see if a variable is true for a specific material, the variable is true if the material has any of the tags in the variable
+        Handles wildcard and negation (*,-)
+
+        Params:
+        - variable : A list of tags
+        - material : A material
+
+        Returns:
+        If a variable is fulfilled by the material
+        """
+
+
+        for tag in variable:
+            if tag == "*": # Check for wildcard
+                return True
+            if tag[0] == "-": # Check for negation
+                if not material.doesHaveTag(tag[1:]):
+                    return True
+            if material.doesHaveTag(tag): # If material has any of the tags the variable is true
+                return True
+            
         return False
 
+
+    def isDependencyValid(dependenyLevel : str, clause : Clause) -> bool:
+        """
+        Checks to see if a dependency level fulfils the dependency levels of a clause
+        Handles wildcard and negation (*,-)
+
+        Params:
+        - dependencyLevel : A dependency level
+        - clause : A clause
+
+        Returns:
+        A boolean representing if the dependency level fulfils the dependency levels of the query
+        """
+
+        # Look in each clause and get the dependency levels
+        for dep in clause.dependencyLevels:
+    
+            if dep[0] == "*":
+                return True
+            if dep[0] == "-":
+                if str(dep[1:]) != str(dependenyLevel):
+                    return True
+            else:
+                if dep == dependenyLevel:
+                    return True
+
+        return False
+
+
+
+    
 
 
 

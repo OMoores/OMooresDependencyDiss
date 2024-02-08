@@ -30,6 +30,9 @@ class Utility:
             A boolean representing if A is a subset of B
         """
 
+        if len(A) < 1: 
+            return True
+
         subset = True # Assume A is a subset and look for variables in A that aren't in B
 
         for item in A:

@@ -98,5 +98,21 @@ class Material:
         else:
             Debug.printLowPriority("Dependency '", dependency.name,"' already exists in material '",self.name,"'")
 
+    def doesHaveTag(self, checkTag : str) -> bool:
+        """
+            Checks to see if a material has a tag
+
+            Params:
+            - tag : A tag
+            Returns:
+            A boolean representing if material has the tag in
+        """
+
+        for tag in self.tags:
+            if str(tag) == str(checkTag):
+                return True
+            
+        return False
+
         
         
