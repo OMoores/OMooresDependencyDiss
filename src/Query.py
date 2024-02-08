@@ -184,6 +184,48 @@ class Query:
             currentMaterials = uniqueMaterials  # At the end of the loop set the sub materials to be looked at in the next loop to the applicable materials from this loop
 
         return solvedMaterials
+    
+    def queryDependencies(materials : [Material], query) -> [Material]:
+        """
+            Finds all of the subdependencies of a set of material according to a query
+
+            Params:
+            - materials : A set of materials
+            - query : A query
+
+            Returns:
+            A set of materials that represents a material and all of its sub dependencies that fulfil the conditions of the query
+        """
+
+        # Create a dictionary to hold all dependencies 
+        dependencyDict = {}
+
+        # Add current materials to dict
+        for mat in materials:
+            dependencyDict[mat.id] = mat
+
+        # Whilst findValidMaterials finds new materials add these new materials to the dictionary
+        matsToBeSearched = materials.copy()
+        newItemsAdded = True
+
+        while newItemsAdded:
+            # Set newItemsAdded to false so if no new items are added the loop does not continue
+            newItemsAdded = False
+            # Find new set of valid materials
+            validMaterials = Query.findValidMaterials(matsToBeSearched, query)
+
+            # Check to see if any are new materials
+            for mat in validMaterials:
+                
+                if not mat.id in dependencyDict.keys:
+                    # if material is not in dictionary already then add it to the dict
+                    dependencyDict[mat.id] = mat
+                    newItemsAdded = True
+
+        # Turn dictionary to list
+        returnList = list(dependencyDict.values())
+        # Return list
+        return returnList
 
     def findValidMaterials(materials : [Material], query) -> [Material]:
         """
@@ -193,6 +235,7 @@ class Query:
             Params:
             - materials : A set of materials
             - query : A query
+
             Returns:
             A set of materials that fulfil the query
         """
