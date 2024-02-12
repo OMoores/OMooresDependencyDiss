@@ -35,3 +35,12 @@ class TestUtility(unittest.TestCase):
         self.assertEqual(Utility.isAinB("2",list3),True)
         self.assertEqual(Utility.isAinB("4",list3),True)
 
+    def test_isAEquivalentB(self):
+        """
+        Description: Check if the function isAEquivalentB works properly
+
+        Expected Result: If all items in A are present in B and all in B are present in A returns true, else returns false
+        """
+
+        self.assertTrue(Utility.isAEquivalentB([1,2,3],[3,2,1])) # True
+        self.assertFalse(Utility.isAEquivalentB([1,2,3],[3,2,2])) # True

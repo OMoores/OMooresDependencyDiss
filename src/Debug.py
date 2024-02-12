@@ -3,7 +3,7 @@ class Debug:
         Used for debugging, behaviour depends on debug level
     """
 
-    debugLevel = 4
+    debugLevel = 0
     """
         Levels:
             - 0 : Prints out nothing

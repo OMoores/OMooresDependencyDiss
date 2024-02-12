@@ -1,3 +1,4 @@
+from ast import Break
 from re import T
 from numpy import number
 from src.Debug import Debug
@@ -185,7 +186,7 @@ class Query:
 
         return solvedMaterials
     
-    def searchMaterialSet(materials : [Material], query) -> [Material]:
+    def searchMaterials(materials : [Material], query) -> [Material]:
         """
         Finds any material that fulfils the query
 
@@ -196,6 +197,17 @@ class Query:
         Returns:
         A set of materials that fulfil the query
         """
+        
+        returnList = []
+
+        for mat in materials:
+
+            if Query.isMaterialValid([mat,"*"], query):
+                if not Utility.isAinB(mat,returnList):   
+                    returnList.append(mat)
+        
+        return returnList
+
     def queryDependencies(materials : [Material], query) -> [Material]:
         """
             Finds all of the subdependencies of a set of material according to a query
@@ -228,9 +240,10 @@ class Query:
             # Check to see if any are new materials
             for mat in validMaterials:
                 
-                if not mat.id in dependencyDict.keys:
+                if not mat.id in dependencyDict.keys():
                     # if material is not in dictionary already then add it to the dict
                     dependencyDict[mat.id] = mat
+                    matsToBeSearched.append(mat)
                     newItemsAdded = True
 
         # Turn dictionary to list
@@ -254,14 +267,14 @@ class Query:
 
         # Look through every material
         for mat in materials:
+
                         
             # Look through each dependency
             for dep in mat.dependencies:
-
                 # If material is valid and not already in return list add to return list
-                if Query.isMaterialValid(dep, query) & Utility.isAinB(dep[0], validMaterialList):
-                    validMaterialList.append(dep[0])
-
+                if Query.isMaterialValid(dep, query):
+                    if not Utility.isAinB(dep[0], validMaterialList):
+                        validMaterialList.append(dep[0])
 
         return validMaterialList
 
@@ -280,22 +293,43 @@ class Query:
         """
 
         # Query -> Clause -> Variable -> Tag
+        if not len(query.clauses) > 0:
+            return False
+        
 
         # For each clause in query
         for clause in query.clauses:
             # Check to see if valid dependency level
-            if not Query.isDependencyValid(dependency[1], clause):
-                return False
-
-            # Check to see status of each variable
-            for variable in clause.variables:
-                if not Query.isVariableTrue(variable, dependency[0]): # If variable is not valid then the material is not valid
-                    return False
+            if Query.isClauseValid(clause, dependency):
+                return True
+                    
                 
-        return True               
+        return False               
 
         
-    
+    def isClauseValid(clause, dependency : [Material, str]) -> bool:
+        """
+        Checks to see if a material is true for a clause
+
+        Params:
+        - clause : A clause
+        - dependency : A list with a material and a dependency level [material : Material, dependencyLevel : str]
+
+        Returns:
+        A boolean representing if the material fulfils the clause
+        """
+
+        if not Query.isDependencyValid(dependency[1], clause):
+            return False
+
+        for variable in clause.variables:
+
+            if not Query.isVariableTrue(variable, dependency[0]):
+                return False
+            
+        return True
+
+
     def isVariableTrue(variable : [str], material : Material) -> bool:
         """
         Checks to see if a variable is true for a specific material, the variable is true if the material has any of the tags in the variable
@@ -334,7 +368,9 @@ class Query:
         Returns:
         A boolean representing if the dependency level fulfils the dependency levels of the query
         """
-
+        if dependenyLevel == "*":
+            return True
+        
         # Look in each clause and get the dependency levels
         for dep in clause.dependencyLevels:
     

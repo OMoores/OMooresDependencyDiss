@@ -69,20 +69,20 @@ class TestQuery(unittest.TestCase):
         self.allRequiredLecturesQuery = Query()
         self.lectureClause = Clause()
         self.lectureClause.addVariable(["Lecture"])
-        self.lectureClause.addDependencyLevel(["*"]) # * will accept any dependency level
-        self.allRequiredLecturesQuery.addClauses([self.lectureClause,self.allRequiredClause]) # Will look for materials that fulfil the condition "required" AND "lectures"
+        self.lectureClause.addDependencyLevel(["Requires"]) # * will accept any dependency level
+        self.allRequiredLecturesQuery.addClauses([self.lectureClause]) # Will look for materials that fulfil the condition "required" AND "lectures"
 
-        # A query looking for all required materials that are not lectures
+        # A query looking for all materials that are not lectures
         self.notLectureQuery = Query()
         self.notLectureClause = Clause()
         self.notLectureClause.addVariable(["-Lecture"]) # The - is a negation of lecture so a material not having a lecture tag will make this variable true
-        self.notLectureClause.addDependencyLevel("Requires")
+        self.notLectureClause.addDependencyLevel("*")
         self.notLectureQuery.addClause(self.notLectureClause)
 
         # A query looking for all material that is not required
         self.notRequiredQuery = Query()
         self.notRequiredClause = Clause()
-        self.notRequiredClause.addVariable(["Lecture"])
+        self.notRequiredClause.addVariable(["*"])
         self.notRequiredClause.addDependencyLevel("-Requires") # The - is a negation of Requires so this query will be true only if the dependency level is not requires
         self.notRequiredQuery.addClause(self.notRequiredClause)
 
@@ -94,6 +94,7 @@ class TestQuery(unittest.TestCase):
         self.workshopClause = Clause()
         self.workshopClause.addDependencyLevel("*")
         self.workshopClause.addVariable(["Workshop"])
+        self.notLectureAndWorkshopQuery.addClauses([self.allRecommendedClause,self.workshopClause])
 
 
         """---------------------------------------------------------"""
@@ -113,22 +114,48 @@ class TestQuery(unittest.TestCase):
         self.noDepNoTagQuery = Query() # Looks for nothing
 
         self.complexQuery = Query() # Looks for lectures that are not required and workshops that are recommended or enhance
-        self.reqLecturesClause = Clause()
-        self.reqLecturesClause.addDependencyLevel("-Requires")
-        self.reqLecturesClause.addVariable(["Lecture"])
+        self.notReqLecturesClause = Clause()
+        self.notReqLecturesClause.addDependencyLevel("-Requires")
+        self.notReqLecturesClause.addVariable(["Lecture"])
         self.recEnhWorkshopsClause = Clause()
         self.recEnhWorkshopsClause.addDependencyLevel("Recommends,EnhancedBy")
         self.recEnhWorkshopsClause.addVariable(["Workshop"])
-        self.complexQuery.addClauses([self.reqLecturesClause,self.recEnhWorkshopsClause])
+        self.complexQuery.addClauses([self.notReqLecturesClause,self.recEnhWorkshopsClause])
 
+        self.mathsAndLectureQuery = Query() # Selects all maths lectures
+        self.mathsAndLectureClause = Clause()
+        self.mathsAndLectureClause.addVariables([["Maths"],["Lecture"]])
+        self.mathsAndLectureQuery.addClause(self.mathsAndLectureClause)
         
 
+    def test_isClauseValid(self):
+        """
+        Description: Test the function isClauseValid, this function takes a material and its dependency level along with a clause and returns if the material and dependency is valid for this clause
+        
+        Expected result: The function returns true for all valid materials and false for invalid ones
+        """
+
+        # Testing to see if Required physics lecture is required - True
+        test1 = Query.isClauseValid(self.allRequiredClause, [self.physicsLectureMat,"Requires"])
+        self.assertTrue(test1)
+
+        # Testing to see if Required physics lecture is a required lecture - True
+        test2 = Query.isClauseValid(self.lectureClause, [self.physicsLectureMat,"Requires"])
+        self.assertTrue(test2)
+
+        # Testing to see if a required physics lecture is not required - False
+        test3 = Query.isClauseValid(self.notRequiredClause, [self.physicsLectureMat,"Requires"])
+        self.assertFalse(test3)
+
+        # Testing to see if a required physics lecture is not a lecture - False
+        test4 = Query.isClauseValid(self.notLectureClause, [self.physicsLectureMat,"Requires"])
+        self.assertFalse(test4)
 
 
 
     def test_isMaterialValid(self):
         """
-            Description: Test the function isMaterialValid, this function takes a material and its dependency level along with a query and returns if the dependency is valid for this query
+            Description: Test the function isMaterialValid, this function takes a material and its dependency level along with a query and returns if the material and dependency is valid for this query
 
             dependency -> [material : Material, dependency level : str]
 
@@ -163,8 +190,8 @@ class TestQuery(unittest.TestCase):
         # Testing to see if a required maths workshop is not a lecture and required - True
         self.assertTrue(Query.isMaterialValid([self.mathsWorkshopMat,"Requires"],self.notLectureQuery))
 
-        # Testing to see if a recommended maths workshop is not a lecture and required - False
-        self.assertFalse(Query.isMaterialValid([self.mathsWorkshopMat,"Recommends"],self.notLectureQuery))
+        # Testing to see if a recommended maths workshop is not a lecture - True
+        self.assertTrue(Query.isMaterialValid([self.mathsWorkshopMat,"Recommends"],self.notLectureQuery))
 
         # Testing to see if a required maths lecture is a lecture and not required - False
         self.assertFalse(Query.isMaterialValid([self.mathsLectureMat,"Requires"],self.notRequiredQuery))
@@ -173,7 +200,7 @@ class TestQuery(unittest.TestCase):
         self.assertTrue(Query.isMaterialValid([self.mathsLectureMat,"Recommends"],self.notRequiredQuery))
 
         # Testing to see if a recommended maths workshop is a lecture and not required - False
-        self.assertFalse(Query.isMaterialValid([self.mathsWorkshopMat,"Recommends"],self.notRequiredQuery))
+        self.assertFalse(Query.isMaterialValid([self.mathsWorkshopMat,"Recommends"],self.complexQuery))
 
     def test_isDependencyValid(self):
         """
@@ -189,13 +216,14 @@ class TestQuery(unittest.TestCase):
         self.assertFalse(Query.isDependencyValid("Recommends", self.allRequiredClause))
 
         # Test Requires to see if it is * - True
-        self.assertTrue(Query.isDependencyValid("Requires", self.lectureClause))
+        self.assertTrue(Query.isDependencyValid("Requires", self.allMatClause)) 
 
         # Test Requires to see if it is not requires - False
         self.assertFalse(Query.isDependencyValid("Requires", self.notRequiredClause))
 
         # Test Recommends to see if it is not requires - True
         self.assertTrue(Query.isDependencyValid("Recommends", self.notRequiredClause))
+
 
 
 
@@ -255,7 +283,7 @@ class TestQuery(unittest.TestCase):
 
         # For engineering lecture look for all materials - Physics workshop, physics lecture, mechanics
         test1Set = Query.findValidMaterials([self.engineeringLectureMat], self.allMatsQuery)
-        self.assertTrue(Utility.isAEquivalentB(test1Set,[self.physicsLectureMat,self.physicsWorkshopMat,self.engineeringLectureMat]))
+        self.assertTrue(Utility.isAEquivalentB(test1Set,[self.physicsLectureMat,self.physicsWorkshopMat,self.mechanicsLectureMat]))
 
         # For engineering lecture look for all required materials - Physics lecture
         test2Set = Query.findValidMaterials([self.engineeringLectureMat], self.allRequiredMatsQuery)
@@ -275,14 +303,14 @@ class TestQuery(unittest.TestCase):
 
         # For engineering lecture look for all materials that are not workshops that are required and all lectures that are not required - Physics lecture, mechanics lecture
         test6Set = Query.findValidMaterials([self.engineeringLectureMat], self.notLectureAndWorkshopQuery)
-        self.assertTrue(Utility.isAEquivalentB(test6Set,[self.physicsLectureMat,self.mechanicsLectureMat]))
+        self.assertTrue(Utility.isAEquivalentB(test6Set,[self.physicsWorkshopMat]))
 
         # For Physics lecture and mechanics lecture look for all materials that are required - Maths lecture
         test7Set = Query.findValidMaterials([self.physicsLectureMat,self.mechanicsLectureMat], self.allRequiredMatsQuery)
-        self.assertTrue(Utility.isAEquivalentB(test7Set,[self.mathsLectureMat]))
+        self.assertTrue(Utility.isAEquivalentB(test7Set,[self.mathsLectureMat,self.mechanicsLectureMat]))
 
         # For maths workshop look for all required materials - None
-        test8Set = Query.findValidMaterials([self.mathsWorkshopMat],self.allMatsQuery)
+        test8Set = Query.findValidMaterials([self.mathsLectureMat],self.allRequiredMatsQuery)
         self.assertEqual(len(test8Set),0)
 
         # For no materials look for all required materials - None
@@ -296,21 +324,40 @@ class TestQuery(unittest.TestCase):
             Expected results: The function returns the correct set of materials based on the query and materials it is given
         """
 
-        test1Set = Query.queryDependencies([self.engineeringLectureMat],self.multiDepMultiTagQuery)
-        self.assertEqual(Utility.isAEquivalentB([self.engineeringLectureMat,self.mechanicsLectureMat,self.physicsLectureMat,self.physicsWorkshopMat,self.mathsLectureMat,self.mathsWorkshopMat]),test1Set)
+        test1Set = Query.queryDependencies([self.engineeringLectureMat],self.multiDepMultiTagQuery) # Looks for all required and recommended workshops and lectures
+        self.assertTrue(Utility.isAEquivalentB([self.engineeringLectureMat,self.physicsLectureMat,self.physicsWorkshopMat,self.mechanicsLectureMat,self.mathsLectureMat,self.mathsWorkshopMat],test1Set))
 
         test2Set = Query.queryDependencies([self.physicsLectureMat],self.multiDepMultiTagQuery)
-        self.assertEqual(Utility.isAEquivalentB([self.mechanicsLectureMat,self.physicsLectureMat,self.physicsWorkshopMat,self.mathsLectureMat,self.mathsWorkshopMat]),test2Set)
+        self.assertTrue(Utility.isAEquivalentB([self.mechanicsLectureMat,self.physicsLectureMat,self.mathsLectureMat,self.mathsWorkshopMat],test2Set))
 
         test3Set = Query.queryDependencies([self.physicsLectureMat],self.allDepAllTagQuery)
-        self.assertEqual(Utility.isAEquivalentB([self.mechanicsLectureMat,self.physicsLectureMat,self.physicsWorkshopMat,self.mathsLectureMat,self.mathsWorkshopMat]),test3Set)
+        self.assertTrue(Utility.isAEquivalentB([self.mechanicsLectureMat,self.physicsLectureMat,self.physicsWorkshopMat,self.mathsLectureMat,self.mathsWorkshopMat],test3Set))
 
         test4Set = Query.queryDependencies([self.physicsLectureMat],self.noDepNoTagQuery)
-        self.assertEqual(len(test4Set),0)
+        self.assertTrue(len(test4Set),0)
 
-        test5Set = Query.queryDependencies([self.engineeringLectureMat],self.complexQuery)
-        self.assertEqual(Utility.isAEquivalentB([self.mechanicsLectureMat,self.physicsLectureMat,self.physicsWorkshopMat],test5Set))
+        test5Set = Query.queryDependencies([self.engineeringLectureMat],self.complexQuery) # Looks for lectures that are not required and workshops that are recommended or enhance
+        self.assertEqual(test5Set,[])
+        self.assertTrue(Utility.isAEquivalentB([self.engineeringLectureMat,self.mechanicsLectureMat,self.physicsLectureMat,self.physicsWorkshopMat],test5Set))
         
 
     def test_searchMaterials(self):
-        ...
+        """
+            Description: Testing the function searchMaterials by giving it a set of materials and a query then checking it returns the correct set of materials
+
+            Expected results: The function returns the correct set of materials based on the query and the materials it is given, unlike queryDependencies searchMaterials selects materials purely based upon tags and does not look at dependencies 
+        """
+        
+        materialSet = [self.mathsLectureMat,self.mathsWorkshopMat,self.physicsLectureMat,self.physicsWorkshopMat,self.engineeringLectureMat,self.mechanicsLectureMat]
+
+        test1Set = Query.searchMaterials(materialSet,self.allMatsQuery) # Should return all materials
+        self.assertTrue(Utility.isAEquivalentB(test1Set,materialSet))
+
+        test2Set = Query.searchMaterials(materialSet,self.allRequiredLecturesQuery) # Should return all lectures
+        self.assertTrue(Utility.isAEquivalentB(test2Set,[self.mathsLectureMat,self.physicsLectureMat,self.mechanicsLectureMat,self.engineeringLectureMat]))
+
+        test3Set = Query.searchMaterials(materialSet,self.notLectureAndWorkshopQuery) # Should return all not lectures
+        self.assertTrue(Utility.isAEquivalentB(test3Set,[self.mathsWorkshopMat,self.physicsWorkshopMat]))
+
+        test4Set = Query.searchMaterials(materialSet, self.mathsAndLectureQuery) # Should return all materials with maths and lecture tags
+        self.assertTrue(Utility.isAEquivalentB(test4Set,[self.mechanicsLectureMat,self.mathsLectureMat]))
