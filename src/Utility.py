@@ -18,6 +18,28 @@ class Utility:
             
         return False
     
+    def isAEquivalentB(A : [], B : []) -> bool:
+        """
+        Takes 2 lists A and B and returns true if all A is in B and all B is in A
+
+        Params:
+        - A : A list of variables
+        - B : A list of variables
+
+        Returns:
+        A boolean representing if A is equivalent to B
+        """
+
+        for item in A:
+            if not Utility.isAinB(item, B):
+                return False
+        
+        for item in B:
+            if not Utility.isAinB(item, A):
+                return False
+        
+        return True
+    
     def isASubsetB(A : [], B : []) -> bool:
         """
             Takes 2 lists A and B and returns true if A is a subset of B and false if it isn't

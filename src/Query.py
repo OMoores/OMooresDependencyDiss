@@ -185,6 +185,17 @@ class Query:
 
         return solvedMaterials
     
+    def searchMaterialSet(materials : [Material], query) -> [Material]:
+        """
+        Finds any material that fulfils the query
+
+        Params:
+        - materials : A set of materials
+        - query : A query (ignores any dependencyLevels in the query)
+
+        Returns:
+        A set of materials that fulfil the query
+        """
     def queryDependencies(materials : [Material], query) -> [Material]:
         """
             Finds all of the subdependencies of a set of material according to a query
