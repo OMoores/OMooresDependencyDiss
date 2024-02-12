@@ -264,6 +264,21 @@ class TestQuery(unittest.TestCase):
             Expected results: Return the correct sets of materials depending on the query
         """
 
+        # Looking for the all dependencies of the engineering lecture 
+        test1 = Query.findValidMaterials([self.engineeringLectureMat],self.queryForAllMats)
+        self.assertTrue(Utility.isAEquivalentB(test1, [self.physicsLectureMat,self.mechanicsLectureMat,self.physicsLectureMat]))
+
+        # Looking for all dependencies that are lectures or recommended materials of the engineerinng lecture
+        test2 = Query.findValidMaterials([self.engineeringLectureMat],self.queryForRecommendsOrLecture)
+        self.assertTrue(Utility.isAEquivalentB(test2,[self.physicsLectureMat,self.mechanicsLectureMat,self.physicsLectureMat]))
+
+        # Looking for all dependencies that are recommended or maths AND a lecture for the mechanics lecture
+        test3 = Query.findValidMaterials([self.mechanicsLectureMat],self.queryForRecommendsORMathsANDLecture)
+        self.assertTrue(Utility.isAEquivalentB(test3,[self.physicsLectureMat,self.mathsLectureMat]))
+
+        # Looking for all dependencies that are maths AND a lecture or not a lecture of the physics lecture
+        test4 = Query.findValidMaterials([self.physicsLectureMat],self.queryForMathsANDLectureORNOTLecture)
+        self.assertTrue(Utility.isAEquivalentB(test4,[self.mathsLectureMat,self.physicsWorkshopMat]))
 
 
     def test_queryDependencies(self):
