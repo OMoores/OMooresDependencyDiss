@@ -202,7 +202,7 @@ class Query:
 
         for mat in materials:
 
-            if Query.isMaterialValid([mat,"*"], query):
+            if Query.isQueryValid([mat,"*"], query):
                 if not Utility.isAinB(mat,returnList):   
                     returnList.append(mat)
         
@@ -272,14 +272,14 @@ class Query:
             # Look through each dependency
             for dep in mat.dependencies:
                 # If material is valid and not already in return list add to return list
-                if Query.isMaterialValid(dep, query):
+                if Query.isQueryValid(dep, query):
                     if not Utility.isAinB(dep[0], validMaterialList):
                         validMaterialList.append(dep[0])
 
         return validMaterialList
 
     
-    def isMaterialValid(dependency : [Material, str], query) -> bool:
+    def isQueryValid(dependency : [Material, str], query) -> bool:
         """
             Checks to see if a material is valid acording to a query
             
