@@ -1,5 +1,3 @@
-from imghdr import tests
-from pydoc import classify_class_attrs
 import unittest
 from src.Utility import Utility
 from src.Query import Clause, Query
