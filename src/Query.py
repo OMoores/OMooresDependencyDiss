@@ -219,7 +219,6 @@ class Query:
             Returns:
             A set of materials that represents a material and all of its sub dependencies that fulfil the conditions of the query
         """
-
         # Create a dictionary to hold all dependencies 
         dependencyDict = {}
 
@@ -324,17 +323,18 @@ class Query:
 
         for variable in clause.variables:
 
-            if not Query.isVariableTrue(variable, dependency[0]):
+            if not Query.isVariableValid(variable, dependency[0]):
                 return False
             
         return True
 
 
-    def isVariableTrue(variable : [str], material : Material) -> bool:
+    def isVariableValid(variable : [str], material : Material) -> bool:
         """
         Checks to see if a variable is true for a specific material, the variable is true if the material has any of the tags in the variable
         Handles wildcard and negation (*,-)
-
+        If the variable is empty returns false
+        
         Params:
         - variable : A list of tags
         - material : A material
@@ -342,9 +342,14 @@ class Query:
         Returns:
         If a variable is fulfilled by the material
         """
-
+        if len(variable) < 1:
+            return False
 
         for tag in variable:
+
+            if len(tag) < 1:
+                continue
+            
             if tag == "*": # Check for wildcard
                 return True
             if tag[0] == "-": # Check for negation
