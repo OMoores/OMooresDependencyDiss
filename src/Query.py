@@ -1,5 +1,3 @@
-from ast import Break
-from re import T
 from numpy import number
 from src.Debug import Debug
 from src.Material import Material
