@@ -116,3 +116,13 @@ class Material:
 
         
         
+    def printMaterialList(materials : []):
+        """
+        Prints a list of materials names
+        """
+
+        list = []
+        for mat in materials:
+            list.append(mat.name)
+
+        print(list)

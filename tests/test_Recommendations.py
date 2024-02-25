@@ -34,14 +34,14 @@ class TestRecommendations(unittest.TestCase):
         self.assertFalse(greaterOrEqualPriority("B","A",["A","B","C"]))
         self.assertFalse(greaterOrEqualPriority("A","D",["A","B","C"]))
 
-    def findIndirectDependencyLevels(self):
+    def test_findIndirectDependencyLevels(self):
         """
         Tests the function findIndirectDependencyLevels.
         This function takes a material and a list of dependency levels in order of most to least important and returns a list of lists of materials, with the index of the list corresponding with the dependency levels
         """
 
-        test1Set = findIndirectDependencyLevels(self.QuantumPhysics,["requires","recommends","enhancedBy"])
-        self.assertTrue(Utility.isAEquivalentB([self.Physics_Workshop,self.Physics,self.Mechanics,self.FurtherMaths,self.Advanced_Maths,self.Basic_Maths],test1Set[0]))
+        test1Set = findIndirectDependencyLevels(self.Quantum_Physics,["requires","recommends","enhancedBy"])
+        self.assertTrue(Utility.isAEquivalentB([self.Quantum_Physics,self.Physics_Workshop,self.Physics,self.Mechanics,self.FurtherMaths,self.Advanced_Maths,self.Basic_Maths],test1Set[0]))
         self.assertTrue(Utility.isAEquivalentB([self.Coding_Workshop,self.Addition,self.Subtraction],test1Set[1]))
         self.assertTrue(Utility.isAEquivalentB([self.Engineering,self.Computer_Science],test1Set[2]))
 
@@ -67,12 +67,8 @@ class TestRecommendations(unittest.TestCase):
         """
         Tests the function createDependencyWeb.
         """
-
-        test1Set = createDependencyWeb([self.Quantum_Physics,self.Basic_Maths],["requires","recommends","enhancedBy"])
-        self.assertEqual(test1Set, [[None,"requires"],["enhancedBy",None]])
-
-        test2Set = createDependencyWeb([self.Quantum_Physics,self.Basic_Maths,self.Coding_Workshop,self.Addition],["requires","recommends","enhancedBy"])
-        self.assertEqual(test2Set, [[None,"requires","recommends","recommends"],["enhancedBy",None,"enhancedBy","recommends"],[None,None,None,None],["enhancedBy","enhancedBy","enhancedBy",None]])
+        test1Set = createDependencyWeb([self.Quantum_Physics,self.Basic_Maths,self.Coding_Workshop,self.Addition],["requires","recommends","enhancedBy"])
+        self.assertEqual(test1Set, [[None,"requires","recommends","recommends"],[None, None,"enhancedBy","recommends"],[None,None,None,None],[None,"enhancedBy","enhancedBy",None]])
   
         
 

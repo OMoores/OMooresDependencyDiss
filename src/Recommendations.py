@@ -107,11 +107,15 @@ def createDependencyWeb(materials : [Material], dependencyPriority : [str]) -> [
         matDepArray = []
 
         indirectDeps = findIndirectDependencyLevels(materials[matIndex],dependencyPriority)      
-        
+
+
 
 
         # Ordering the dependencies 
         for orderIndex in range(0,len(materials)):
+            if matIndex == len(matDepArray): # If we are trying to find the dependency of a material on itself then add None, as a material is not dependent on itself
+                matDepArray.append(None)
+                continue
             # Find the dep level of material material[orderIndex]
             matDepArray.append(findDepPriority(materials[orderIndex].name,indirectDeps,dependencyPriority))
 
@@ -154,7 +158,7 @@ def findIndirectDependencyLevels(material : Material, dependencyPriority : [str]
         query = Query()
         clause = Clause()
         clause.addVariable(["*"])
-        clause.addDependencyLevels(dependencyPriority[:depIndex])
+        clause.addDependencyLevels(dependencyPriority[:depIndex+1])
         query.addClause(clause)
 
         currentSet = Query.queryDependencies([material],query)
@@ -163,7 +167,7 @@ def findIndirectDependencyLevels(material : Material, dependencyPriority : [str]
         previousSet = currentSet
 
         returnList.append(newItems)
-
+  
     return returnList
 
 def findDepPriority(name : str, materials : [[Material]], dependencyPriority : [str]) -> str|None:

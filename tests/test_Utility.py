@@ -1,5 +1,6 @@
 import unittest
 from src.Utility import *
+from src.Material import *
 
 class TestUtility(unittest.TestCase):
 
@@ -44,3 +45,13 @@ class TestUtility(unittest.TestCase):
 
         self.assertTrue(Utility.isAEquivalentB([1,2,3],[3,2,1])) # True
         self.assertFalse(Utility.isAEquivalentB([1,2,3],[3,2,2])) # True
+        self.assertFalse(Utility.isAEquivalentB([1,2,3],[1,2])) # False
+
+        # Test works with objects
+        obj1 = Material("Achim")
+        obj2 = Material("David")
+        obj3 = Material("Ayah")
+
+        self.assertTrue(Utility.isAEquivalentB([obj1,obj2],[obj2,obj1]))
+        self.assertFalse(Utility.isAEquivalentB([obj1,obj2,obj3],[obj2,obj1]))
+    

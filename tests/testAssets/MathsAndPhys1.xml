@@ -129,6 +129,7 @@
         </tags>
         <dependencies>
             <recommends>Physics_Workshop</recommends>
+            <recommends>Coding_Workshop</recommends>
             <requires>Mechanics</requires>
         </dependencies>
     </material>
