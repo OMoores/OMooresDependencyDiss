@@ -1,12 +1,14 @@
-from ast import MatchStar
 from src.Utility import Utility
 from src.Material import Material
 from src.Query import Clause, Query
+from z3 import *
 
 def recommendOrder(materials : [Material], dependencyPriority : [str]) -> [Material]:
     """
     Takes a set of materials and recommends an order to learn the materials in based of the materials 
     dependencies and the priority of the dependency levels
+    
+    Does this using the z3 SAT solver
 
     Params:
     materials : A set of materials 
@@ -15,33 +17,76 @@ def recommendOrder(materials : [Material], dependencyPriority : [str]) -> [Mater
     Returns:
     A set of materials in a recommended order
     """
-    ...
+    depWeb = createDependencyWeb(materials,dependencyPriority)
 
-def isRecommendationValid(recommendation : [Material], dependencyPriority : [str]) -> bool:
+    solver = Solver()
+    greaterZ3Func = Function('greaterZ3Func',greaterOrEqualPriority(),greaterOrEqualPriority())
+
+
+    # Creates a list of empty integers for the z3 solver, these will represent the index of materials
+    order = [Int(f'x{index}') for index in range(len(materials))]
+
+    # Making sure each material is represented in the order
+    for i in range(len(materials)):
+        solver.add(Or([i == order[j] for j in range(len(order))]))
+
+    # Creating the constraint that an object must not be more dependent on objects earlier in the list then they are on it 
+    # More or less doing the same thing as isRecomendationValid
+    for i in range(len(materials)):
+        for j in range(i+1,len(materials)):
+            ...
+
+    # for i in range(len(order)):
+    #     for j in range(i+1,len(order)):
+    #         iIndex = order[i]
+    #         jIndex = order[j]
+    #         AdepB = depWeb[iIndex][jIndex]
+    #         BdepA = depWeb[jIndex][iIndex]
+    #         # If B depends on A more then A depends on B recommendation is not valid
+    #         solver.add(greaterOrEqualPriority(AdepB,BdepA,dependencyPriority))
+    solver.check()
+    model = solver.model()
+
+    print(model)
+
+    return model
+    
+
+
+
+    
+    
+
+def isRecommendationValid(recommendation : [Material], dependencyPriority : [str], depWeb = None) -> bool:
     """
     Takes a set of materials and returns if the order they are in is a valid order to recommend the materials in
 
     Params:
     recommendation : A set of materials in order recommended
     dependencyPriority : A list of dependency levels in order of importance
+    depWeb : A dependency web, is optional and can be used to reduce processing required when checking in a function that alraedy has a dependency web
 
     Returns: 
     A boolean representing if the recommendation is valid
     """
-    
+
+    if depWeb == None:
+        depWeb = createDependencyWeb(recommendation, dependencyPriority)
+
+
     for matAIndex in range(0,len(recommendation)):
 
 
         # If material A recommends materials B... then material B... must recommend or enhance A
         for matBIndex in range(matAIndex+1,len(recommendation)):
-            AdepB = findDependenfindcyLevel(recommendation[matAIndex],recommendation[matBIndex],dependencyPriority)
-            BdepA = findDependencyLevel(recommendation[matAIndex],recommendation[matBIndex],dependencyPriority)
+            AdepB = depWeb[matAIndex][matBIndex]
+            BdepA = depWeb[matBIndex][matAIndex]
 
             # If B depends on A more then A depends on B recommendation is not valid
             if not greaterOrEqualPriority(AdepB,BdepA,dependencyPriority):
                 return False
             
-    return False
+    return True
     
             
             
@@ -123,7 +168,6 @@ def createDependencyWeb(materials : [Material], dependencyPriority : [str]) -> [
     
         web.append(matDepArray)
 
-    print(web)
 
     return web
 

@@ -17,7 +17,7 @@ class TestRecommendations(unittest.TestCase):
         self.Physics_Workshop = selectMaterialWithName("Physics_Workshop",self.files)
         self.Mechanics = selectMaterialWithName("Mechanics",self.files)
         self.Physics = selectMaterialWithName("Physics",self.files)
-        self.FurtherMaths = selectMaterialWithName("Further_Maths",self.files)
+        self.Further_Maths = selectMaterialWithName("Further_Maths",self.files)
         self.Advanced_Maths = selectMaterialWithName("Advanced_Maths",self.files)
         self.Basic_Maths = selectMaterialWithName("Basic_Maths",self.files)
         self.Subtraction = selectMaterialWithName("Subtraction",self.files)
@@ -41,7 +41,7 @@ class TestRecommendations(unittest.TestCase):
         """
 
         test1Set = findIndirectDependencyLevels(self.Quantum_Physics,["requires","recommends","enhancedBy"])
-        self.assertTrue(Utility.isAEquivalentB([self.Quantum_Physics,self.Physics_Workshop,self.Physics,self.Mechanics,self.FurtherMaths,self.Advanced_Maths,self.Basic_Maths],test1Set[0]))
+        self.assertTrue(Utility.isAEquivalentB([self.Quantum_Physics,self.Physics_Workshop,self.Physics,self.Mechanics,self.Further_Maths,self.Advanced_Maths,self.Basic_Maths],test1Set[0]))
         self.assertTrue(Utility.isAEquivalentB([self.Coding_Workshop,self.Addition,self.Subtraction],test1Set[1]))
         self.assertTrue(Utility.isAEquivalentB([self.Engineering,self.Computer_Science],test1Set[2]))
 
@@ -60,7 +60,7 @@ class TestRecommendations(unittest.TestCase):
         self.assertEqual("recommends",test2Set)
         test3Set = findDepPriority(self.Computer_Science.name,levels,depPriorities)
         self.assertEqual("enhancedBy",test3Set)
-        test4Set = findDepPriority(self.FurtherMaths,levels,depPriorities) # Testing with a mat not in material set
+        test4Set = findDepPriority(self.Further_Maths,levels,depPriorities) # Testing with a mat not in material set
         self.assertEqual(test4Set,None)
 
     def test_createDependencyWeb(self):
@@ -71,4 +71,28 @@ class TestRecommendations(unittest.TestCase):
         self.assertEqual(test1Set, [[None,"requires","recommends","recommends"],[None, None,"enhancedBy","recommends"],[None,None,None,None],[None,"enhancedBy","enhancedBy",None]])
   
         
+    def test_isRecommendationValid(self):
+        """
+        Tests the function isRecommendationValid
+        """
+        dependencyPriority = ["requires","recommends","enhancedBy",None]
 
+        validSet1 = [self.Mechanics,self.Advanced_Maths,self.Basic_Maths]
+        self.assertTrue(isRecommendationValid(validSet1,dependencyPriority))
+        validSet2 = [self.Quantum_Physics,self.Physics,self.Further_Maths,self.Basic_Maths,self.Coding_Workshop]
+        self.assertTrue(isRecommendationValid(validSet2,dependencyPriority))
+                        
+        invalidSet1 = [self.Addition,self.Basic_Maths]
+        self.assertFalse(isRecommendationValid(invalidSet1,dependencyPriority))
+        invalidSet2 = [self.Further_Maths,self.Advanced_Maths,self.Basic_Maths,self.Quantum_Physics]
+        self.assertFalse(isRecommendationValid(invalidSet2,dependencyPriority))
+
+    def test_recommendOrder(self):
+        """
+        Tests the function recommendOrder
+        """
+        dependencyPriority = ["requires","recommends","enhancedBy",None]
+
+        material1Set = [self.Quantum_Physics,self.Basic_Maths,self.Computer_Science]
+
+        self.assertEqual(recommendOrder(material1Set,dependencyPriority),[])
