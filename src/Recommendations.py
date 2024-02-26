@@ -17,33 +17,37 @@ def recommendOrder(materials : [Material], dependencyPriority : [str]) -> [Mater
     Returns:
     A set of materials in a recommended order
     """
-    depWeb = createDependencyWeb(materials,dependencyPriority)
 
     solver = Solver()
-    greaterZ3Func = Function('greaterZ3Func',greaterOrEqualPriority(),greaterOrEqualPriority())
 
+
+    depWeb = createDependencyWeb(materials,dependencyPriority)
 
     # Creates a list of empty integers for the z3 solver, these will represent the index of materials
-    order = [Int(f'x{index}') for index in range(len(materials))]
+    order = [Int('{index}') for index in range(len(materials))]
+
+    # Making a symbolic dependencyPriority so it can be used in a symbolic function
+    symbolic_dependencyPriority = Array('symbolic_dependencyPriority',IntSort(),StringSort())
+    solver.add(And([symbolic_dependencyPriority[i] == dependencyPriority[i] for i in range(len(dependencyPriority))]))
+
+    # Making a symbolic depWeb
+    symbolic_depWeb = Array('symbolic_depWeb',IntSort(), ArraySort(IntSort(),StringSort()))
+    solver.add(And([symbolic_depWeb == depWeb[i][j] for i in range(len(depWeb)) for j in range(len(depWeb[0]))]))
+
+    # Making a symbolic greaterOrEqualPriority function
+    symbolic_greaterOrEqualPriority = Function('symbolic_greaterOrEqualPriority',StringSort(),StringSort(),ArraySort(IntSort(),StringSort()),BoolSort())
+
+    # Check that every item after item i in order relies on i <= i relies on them
+    for i in range(0,len(order)):
+        for j in range(i+1,len(order)):
+            model.add(IndexOf(symbolic_dependencyPriority,Select(symbolic_depWeb,order[i])) <= IndexOf(symbolic_dependencyPriority,Select(symbolic_depWeb,order[j])))
+
+    
 
     # Making sure each material is represented in the order
     for i in range(len(materials)):
         solver.add(Or([i == order[j] for j in range(len(order))]))
-
-    # Creating the constraint that an object must not be more dependent on objects earlier in the list then they are on it 
-    # More or less doing the same thing as isRecomendationValid
-    for i in range(len(materials)):
-        for j in range(i+1,len(materials)):
-            ...
-
-    # for i in range(len(order)):
-    #     for j in range(i+1,len(order)):
-    #         iIndex = order[i]
-    #         jIndex = order[j]
-    #         AdepB = depWeb[iIndex][jIndex]
-    #         BdepA = depWeb[jIndex][iIndex]
-    #         # If B depends on A more then A depends on B recommendation is not valid
-    #         solver.add(greaterOrEqualPriority(AdepB,BdepA,dependencyPriority))
+            
     solver.check()
     model = solver.model()
 
@@ -51,6 +55,10 @@ def recommendOrder(materials : [Material], dependencyPriority : [str]) -> [Mater
 
     return model
     
+
+    
+
+
 
 
 
@@ -88,7 +96,6 @@ def isRecommendationValid(recommendation : [Material], dependencyPriority : [str
             
     return True
     
-            
             
 
 

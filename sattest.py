@@ -2,22 +2,17 @@ from numpy import var
 from z3 import *
 solver = Solver()
 
-def distinct(list):
-    if len(set(list)) == len(list):
-        return True
-    return False
+arr = [1,2,3]
+T = Int('f{x}')
 
-list = [1,2,3,4]
+z3_array = Array('z3_array', IntSort(), IntSort())
+for i, value in enumerate(arr):
+    z3_array = Store(z3_array, i, value)
 
-variables = [Int(f'x{i}') for i in range(len(list))]
+solver.add(Select(z3_array, T) == 2)
 
-for i in range(len(variables)):
-    solver.add(Or([variables[i] == list[j] for j in range(len(variables))]))
 
-for i in range(len(variables)-1):
-    solver.add(variables[i] > variables[i+1])
-
-solver.check()
-m=solver.model()
-
-print([m.evaluate(num).as_long() for num in variables])
+print(solver.check())
+model = solver.model()
+for item in model.decls():
+    print(model[item])
