@@ -24,39 +24,37 @@ def recommendOrder(materials : [Material], dependencyPriority : [str]) -> [Mater
     depWeb = createDependencyWeb(materials,dependencyPriority)
 
     # Creates a list of empty integers for the z3 solver, these will represent the index of materials
-    order = [Int('{index}') for index in range(len(materials))]
-
-    # Making a symbolic dependencyPriority so it can be used in a symbolic function
-    symbolic_dependencyPriority = [String('depPriority{index}') for index in range(len(dependencyPriority))]
-    solver.add(And([symbolic_dependencyPriority[index] == dependencyPriority[index] for index in range(len(dependencyPriority))]))
-
-    
-
-    # Making a symbolic depWeb
-    symbolic_depWeb = [[String(f'depWeb_{i}_{j}') for j in range(len(depWeb[0]))] for i in range(len(depWeb))]
-    solver.add(And([symbolic_depWeb[i][j] == depWeb[i][j] for i in range(len(depWeb))for j in range(len(depWeb[0]))]))
-
-    # Check that every item after item i in order relies on i <= i relies on them
-    solver.add(And([IndexOf(symbolic_dependencyPriority,Select(symbolic_depWeb,order[i])) <= IndexOf(symbolic_dependencyPriority,Select(symbolic_depWeb,order[j])) for i in range(len(order)) for j in range(i+1,len(order))])) # FUCKED
-
-
-    
-
+    order = [Int(f'{index}') for index in range(len(materials))]
     # Making sure each material is represented in the order
     for i in range(len(materials)):
-        solver.add(Or([i == order[j] for j in range(len(order))]))
+        solver.add(order[i] >= 0, order[i] < len(order))
+    solver.add(Distinct(order))
+
+    # Making symbolic dependeny web and constraining its values to those in depWeb
+    symbolic_depWeb = Array('symbolic_depWeb', IntSort(), IntSort())
+    for i in range(len(depWeb)):
+        for j in range(len(depWeb[0])):
+            symbolic_depWeb = Store(symbolic_depWeb, len(depWeb)*i+len(depWeb[0]*j), depWeb[i][j])
+    
+
+    for i in range(len(order)):
+        for j in range(i+1,len(order)):
+            symbolic_depWeb[order[i]]
+
+
+
+        # for j in range(i+1,len(order)):
+        #     orderJ = Int(f'orderJ_{j}')
+
+        
             
     solver.check()
+    print("AEEEEEEEEEEEEEE",solver.check())
     model = solver.model()
 
-    print(model)
+    
 
     return model
-    
-
-    
-
-
 
 
 
@@ -89,7 +87,7 @@ def isRecommendationValid(recommendation : [Material], dependencyPriority : [str
             BdepA = depWeb[matBIndex][matAIndex]
 
             # If B depends on A more then A depends on B recommendation is not valid
-            if not greaterOrEqualPriority(AdepB,BdepA,dependencyPriority):
+            if not AdepB <= BdepA:
                 return False
             
     return True
@@ -99,43 +97,10 @@ def isRecommendationValid(recommendation : [Material], dependencyPriority : [str
 
 
         
-def greaterOrEqualPriority(dependencyA : str, dependencyB : str, dependencyPriority : [str]) -> bool:
-    """
-    Finds if dependencyA is a highter or the same priority as dependencyB then return true, else return false
-
-    Params:
-    dependencyA : A dependency level
-    dependencyB : A dependency level
-    dependencyPriority : A list of dependency levels in order of importance
-
-    Returns:   
-    A boolean returning if dependency A is greater than or equal to the priority of B
-    """
-
-    if dependencyA == dependencyB:
-        return True
-
-    # The index of each dependency in the priority list
-    indexA = len(dependencyPriority)
-    indexB = -1
-
-    # Finding the index of each dependency in the priority list
-    for index in range(0,len(dependencyPriority)):
-        if dependencyA == dependencyPriority[index]:
-            indexA = index
-
-        if dependencyB == dependencyPriority[index]:
-            indexB = index
-
-    if indexA <= indexB:
-        return True
-    
-    return False
 
 
 
-
-def createDependencyWeb(materials : [Material], dependencyPriority : [str]) -> [[str]]: 
+def createDependencyWeb(materials : [Material], dependencyPriority : [str]) -> [[int]]: 
     """
     Creates a datastructure that shows the indirect dependency level of every material on every other material
 
@@ -158,13 +123,10 @@ def createDependencyWeb(materials : [Material], dependencyPriority : [str]) -> [
 
         indirectDeps = findIndirectDependencyLevels(materials[matIndex],dependencyPriority)      
 
-
-
-
         # Ordering the dependencies 
         for orderIndex in range(0,len(materials)):
             if matIndex == len(matDepArray): # If we are trying to find the dependency of a material on itself then add None, as a material is not dependent on itself
-                matDepArray.append(None)
+                matDepArray.append(len(dependencyPriority))
                 continue
             # Find the dep level of material material[orderIndex]
             matDepArray.append(findDepPriority(materials[orderIndex].name,indirectDeps,dependencyPriority))
@@ -219,9 +181,9 @@ def findIndirectDependencyLevels(material : Material, dependencyPriority : [str]
   
     return returnList
 
-def findDepPriority(name : str, materials : [[Material]], dependencyPriority : [str]) -> str|None:
+def findDepPriority(name : str, materials : [[Material]], dependencyPriority : [str]) -> int:
     """
-    Takes the return of findIndirectDependencyLevels and a material name and returns the materials dependency priority
+    Takes the return of findIndirectDependencyLevels and a material name and returns the index of the dependency priority
 
     Params:
     name : A materials name
@@ -229,17 +191,17 @@ def findDepPriority(name : str, materials : [[Material]], dependencyPriority : [
     dependencyPriority : A list of dependency priorities
 
     Returns:
-    The dependency priority of the material specified
+    The dependency priority of the material specified, if it is none it is the priority of the last dependency + 1
     """
 
     for i in range(0,len(materials)):
         # If material is located in list i then it has dependencyPriority[i]
         if selectMaterialWithName(name,materials[i]) != None:
-            return dependencyPriority[i] 
-    return None
+            return i
+    return len(dependencyPriority)
 
         
-def selectMaterialWithName(name : str, materials : [Material]) -> Material|None:
+def selectMaterialWithName(name : str, materials : [Material]) -> Material:
     """
     Takes a set of materials and a name then returns the first material it finds with this name
     """

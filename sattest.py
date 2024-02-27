@@ -1,18 +1,18 @@
 from numpy import var
 from z3 import *
+# Create a solver
 solver = Solver()
+int_values = [1,2,3]
+# Example lists (replace these with your actual data)
+symbolic_indices = Array('symbolic_indices',IntSort(), IntSort())
+for i in range(len(int_values)):
+    symbolic_indices = Store(symbolic_indices,i,int_values[i])
 
-arr = [1,2,3]
-T = Int('f{x}')
+z = Int('number')
+solver.add(z >= 0)
+solver.add(z < len(int_values))
 
-z3_array = Array('z3_array', IntSort(), IntSort())
-for i, value in enumerate(arr):
-    z3_array = Store(z3_array, i, value)
 
-solver.add(Select(z3_array, T) == 2)
-
+solver.add(Select(symbolic_indices, z) == 2)
 
 print(solver.check())
-model = solver.model()
-for item in model.decls():
-    print(model[item])

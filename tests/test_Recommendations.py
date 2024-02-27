@@ -23,16 +23,6 @@ class TestRecommendations(unittest.TestCase):
         self.Subtraction = selectMaterialWithName("Subtraction",self.files)
         self.Addition = selectMaterialWithName("Addition",self.files)
 
-    def test_greaterOrEqualPriority(self):
-        """
-        Tests the function greaterOrEqualPriority.
-        It takes 2 strings and a list of strings and if string 1 is closer or equal distance from the beginning of the list then
-        the function returns true
-        """
-
-        self.assertTrue(greaterOrEqualPriority("A","B",["A","B","C"]))
-        self.assertFalse(greaterOrEqualPriority("B","A",["A","B","C"]))
-        self.assertFalse(greaterOrEqualPriority("A","D",["A","B","C"]))
 
     def test_findIndirectDependencyLevels(self):
         """
@@ -55,20 +45,20 @@ class TestRecommendations(unittest.TestCase):
         levels = [[self.Quantum_Physics,self.Physics],[self.Basic_Maths],[self.Mechanics,self.Coding_Workshop,self.Computer_Science]]
 
         test1Set = findDepPriority(self.Quantum_Physics.name,levels,depPriorities)
-        self.assertEqual("requires",test1Set)
+        self.assertEqual(0,test1Set)
         test2Set = findDepPriority(self.Basic_Maths.name,levels,depPriorities)
-        self.assertEqual("recommends",test2Set)
+        self.assertEqual(1,test2Set)
         test3Set = findDepPriority(self.Computer_Science.name,levels,depPriorities)
-        self.assertEqual("enhancedBy",test3Set)
+        self.assertEqual(2,test3Set)
         test4Set = findDepPriority(self.Further_Maths,levels,depPriorities) # Testing with a mat not in material set
-        self.assertEqual(test4Set,None)
+        self.assertEqual(3,test4Set)
 
     def test_createDependencyWeb(self):
         """
         Tests the function createDependencyWeb.
         """
         test1Set = createDependencyWeb([self.Quantum_Physics,self.Basic_Maths,self.Coding_Workshop,self.Addition],["requires","recommends","enhancedBy"])
-        self.assertEqual(test1Set, [[None,"requires","recommends","recommends"],[None, None,"enhancedBy","recommends"],[None,None,None,None],[None,"enhancedBy","enhancedBy",None]])
+        self.assertEqual(test1Set, [[3,0,1,1],[3, 3,2,1],[3,3,3,3],[3,2,2,3]])
   
         
     def test_isRecommendationValid(self):
