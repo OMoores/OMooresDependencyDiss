@@ -27,20 +27,18 @@ def recommendOrder(materials : [Material], dependencyPriority : [str]) -> [Mater
     order = [Int('{index}') for index in range(len(materials))]
 
     # Making a symbolic dependencyPriority so it can be used in a symbolic function
-    symbolic_dependencyPriority = Array('symbolic_dependencyPriority',IntSort(),StringSort())
-    solver.add(And([symbolic_dependencyPriority[i] == dependencyPriority[i] for i in range(len(dependencyPriority))]))
+    symbolic_dependencyPriority = [String('depPriority{index}') for index in range(len(dependencyPriority))]
+    solver.add(And([symbolic_dependencyPriority[index] == dependencyPriority[index] for index in range(len(dependencyPriority))]))
+
+    
 
     # Making a symbolic depWeb
-    symbolic_depWeb = Array('symbolic_depWeb',IntSort(), ArraySort(IntSort(),StringSort()))
-    solver.add(And([symbolic_depWeb == depWeb[i][j] for i in range(len(depWeb)) for j in range(len(depWeb[0]))]))
-
-    # Making a symbolic greaterOrEqualPriority function
-    symbolic_greaterOrEqualPriority = Function('symbolic_greaterOrEqualPriority',StringSort(),StringSort(),ArraySort(IntSort(),StringSort()),BoolSort())
+    symbolic_depWeb = [[String(f'depWeb_{i}_{j}') for j in range(len(depWeb[0]))] for i in range(len(depWeb))]
+    solver.add(And([symbolic_depWeb[i][j] == depWeb[i][j] for i in range(len(depWeb))for j in range(len(depWeb[0]))]))
 
     # Check that every item after item i in order relies on i <= i relies on them
-    for i in range(0,len(order)):
-        for j in range(i+1,len(order)):
-            model.add(IndexOf(symbolic_dependencyPriority,Select(symbolic_depWeb,order[i])) <= IndexOf(symbolic_dependencyPriority,Select(symbolic_depWeb,order[j])))
+    solver.add(And([IndexOf(symbolic_dependencyPriority,Select(symbolic_depWeb,order[i])) <= IndexOf(symbolic_dependencyPriority,Select(symbolic_depWeb,order[j])) for i in range(len(order)) for j in range(i+1,len(order))])) # FUCKED
+
 
     
 
