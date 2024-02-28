@@ -15,7 +15,7 @@ def recommendOrder(materials : [Material], dependencyPriority : [str]) -> [Mater
     dependencyPriority : A list of dependency levels in order of importance
 
     Returns:
-    A set of materials in a recommended order
+    A set of materials in a recommended order. The first material in the list is the last to learn
     """
 
     solver = Solver()
@@ -34,27 +34,23 @@ def recommendOrder(materials : [Material], dependencyPriority : [str]) -> [Mater
     symbolic_depWeb = Array('symbolic_depWeb', IntSort(), IntSort())
     for i in range(len(depWeb)):
         for j in range(len(depWeb[0])):
-            symbolic_depWeb = Store(symbolic_depWeb, len(depWeb)*i+len(depWeb[0]*j), depWeb[i][j])
+            symbolic_depWeb = Store(symbolic_depWeb, len(depWeb)*i+j, depWeb[i][j])
     
-
-    for i in range(len(order)):
-        for j in range(i+1,len(order)):
-            symbolic_depWeb[order[i]]
-
-
-
-        # for j in range(i+1,len(order)):
-        #     orderJ = Int(f'orderJ_{j}')
-
-        
+    for i in range(len(depWeb)-1,-1,-1):
+        for j in range(len(depWeb)-1,i-1,-1):
             
+            solver.add(symbolic_depWeb[order[i] * len(depWeb) + order[j]] <= symbolic_depWeb[order[j] * len(depWeb) + order[i]])
+
+
     solver.check()
-    print("AEEEEEEEEEEEEEE",solver.check())
     model = solver.model()
+    order_values = [model[i].as_long() for i in order]
+    return_materials = [materials[order_values[i]] for i in range(0,len(order_values))]
+    print([return_materials[i].name for i in range(0,len(return_materials))])
 
-    
+    return return_materials
 
-    return model
+
 
 
 

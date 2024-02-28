@@ -83,6 +83,18 @@ class TestRecommendations(unittest.TestCase):
         """
         dependencyPriority = ["requires","recommends","enhancedBy",None]
 
-        material1Set = [self.Quantum_Physics,self.Basic_Maths,self.Computer_Science]
+        material1Set = [self.Addition,self.Subtraction,self.Basic_Maths,self.Advanced_Maths,self.Further_Maths,self.Quantum_Physics,self.Mechanics,self.Computer_Science,self.Coding_Workshop,self.Engineering]
+        test1Set = recommendOrder(material1Set, dependencyPriority)
+        self.assertTrue(isRecommendationValid(test1Set,dependencyPriority))
 
-        self.assertEqual(recommendOrder(material1Set,dependencyPriority),[])
+
+        material2Set = [self.Quantum_Physics,self.Computer_Science,self.Advanced_Maths,self.Addition,self.Mechanics]
+        test2Set = recommendOrder(material2Set,dependencyPriority)
+        self.assertTrue(isRecommendationValid(test2Set,dependencyPriority))
+
+        
+
+        
+
+        
+        
