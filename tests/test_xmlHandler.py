@@ -141,9 +141,8 @@ class TestParseXmlFiles(unittest.TestCase):
 
         # Testing to see if can create an operation for requiring a material with no operators
         test1Root = root[0]
-        
-
-
+        test1Result = XmlHandler.createOperation()
+        self.assertEqual(test1Result,[[None,"basic_maths"],"requires"])
 
 
         test2Root = root[1]
