@@ -33,9 +33,16 @@ class XmlHandler:
                 Debug.printHighPriority("File ",path," is not a valid xml files")
                 raise(Error)
 
+            # Check file is formatted properly
+            if root.tag != "materials":
+                raise Error("File is not formatted properly")
 
 
             for child in root: # Each child is a material
+
+                if child.tag != "material":
+                    raise Error("File is not formatted properly")
+
                 material = XmlHandler.initMaterial(child)
 
                 # Checking to see if a material with the same name exists in materialNameDict
@@ -55,7 +62,7 @@ class XmlHandler:
     def initMaterial(child) -> Material:
         """
         Takes the child of the root of a correctly formatted xml file (the material tag) and returns a Material object created from the name and tag found in the child
-
+Exception
         Params:
             - child : Contains the information about a material from an xml file -> etree.parse(path).getroot()[index] will return a child from an appropriate xml file path
 
@@ -67,18 +74,25 @@ class XmlHandler:
 
         # Setting name
         try:
-            mat.setName(child[0].text)
+            # Looking for fileName tag
+            for i in range(0,len(child)):
+                if child[i].tag == "fileName":
+                    mat.setName(child[i].text)
+                    break
         except:
-            Debug.printMediumPriority("Material has failed to created, could not read name: ", child)
+            Debug.printHighPriority("Material has failed to created, could not read name: ", mat.name)
 
 
         # Setting tags
         try:
             tagList = []
 
-            for tag in child[1]:
-                tagList.append(tag.text)
-
+            for i in range(0,len(child)):
+                if child[i].tag == "tags":
+                    
+                    for tag in child[i]:
+                        tagList.append(tag.text)
+                    break
             mat.addTags(tagList)
         except:
             Debug.printMediumPriority("Material has failed to add tags: ", mat.name)
@@ -86,10 +100,12 @@ class XmlHandler:
         # Adding dependencies in string form
         try:
             # Looking through every tag in dependency tag and adding their text -> Will be used later to find actual dependencies
-            for dep in child[2]:
-                mat.tempDep.append([dep.text, dep.tag])
+            for i in range(0,len(child)):
+                if child[i].tag == "dependencies":
+                    for dep in child[i]:
+                        mat.tempDep.append([dep.text, dep.tag])
         except:
-            ...
+            Debug.printMediumPriority("Material has failed to add dependencies: ",mat.name)
         
 
         return mat

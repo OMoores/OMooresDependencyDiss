@@ -111,7 +111,19 @@ class TestParseXmlFiles(unittest.TestCase):
         self.assertTrue(len(list(filter(lambda x : x == '5', matNames))) == 1)
         self.assertTrue(len(list(filter(lambda x : x == '6', matNames))) == 1)
 
+    def test_parseWrongOrderXml(self):
+        """
+        Description: Parse an xml that does not have its tags in the order fileName, tags, dependencies in a material
 
+        Expected result: Should parse like normal
+        """
 
+        materials = XmlHandler.parseXmlFiles(["./tests/testAssets/wrongOrder.xml"])
 
-    
+        self.assertEqual(len(materials), 3)
+
+        matNames = list(map(lambda x : x.name, materials))
+        
+        self.assertTrue(len(list(filter(lambda x : x == 'Addition', matNames))) == 1)
+        self.assertTrue(len(list(filter(lambda x : x == 'Subtraction', matNames))) == 1)
+        self.assertTrue(len(list(filter(lambda x : x == 'Basic_Maths', matNames))) == 1)

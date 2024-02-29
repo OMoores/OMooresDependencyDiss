@@ -1,0 +1,37 @@
+<materials>
+    <material>
+        <fileName>Addition</fileName>
+        <tags>
+            <tag>Maths</tag>
+            <tag>Workshop</tag>
+        </tags>
+        <dependencies>
+            <enhancedBy>Basic_Maths</enhancedBy>
+        </dependencies>
+    </material>
+
+    <material>
+        <dependencies>
+            <enhancedBy>Basic_Maths</enhancedBy>
+        </dependencies>
+        <fileName>Subtraction</fileName>
+        <tags>
+            <tag>Maths</tag>
+            <tag>Workshop</tag>
+        </tags>
+    </material>
+
+    <material>
+        <tags>
+            <tag>Maths</tag>
+            <tag>Lecture</tag>
+        </tags>
+        <dependencies>
+            <recommends>Addition</recommends>
+            <recommends>Subtraction</recommends>
+        </dependencies>
+        <fileName>Basic_Maths</fileName>
+    </material>
+
+
+</materials>
