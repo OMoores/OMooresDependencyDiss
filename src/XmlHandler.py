@@ -97,12 +97,6 @@ Exception
 
         # Adding dependencies in string form
         try:
-            # Looking through every tag in dependency tag and adding their text -> Will be used later to find actual dependencies
-            # dependenciesTag = XmlHandler.getTag(child,"dependencies")[0]
-           
-            # for dep in dependenciesTag:
-            #     mat.tempDep.append([dep.text, dep.tag])
-
             tempDep = XmlHandler.getTempDep(child)
             mat.tempDep = tempDep
         except:
@@ -168,7 +162,46 @@ Exception
         - element : An etree element (should be the material element) 
 
         Returns:
+        A list of dependencies in the format [[operation,"dependency level"],...]
+        
+        An operation is either a material or an OR, AND or NOT operation
 
+        material -> [None,"material name"] --- None means this list only contains a material name
+        OR -> ["OR", operation, operation]
+        AND -> ["AND", operation, operation]
         """
+
+        # Looking through every tag in dependency tag and adding their text -> Will be used later to find actual dependencies
+        dependenciesTag = XmlHandler.getTag(element,"dependencies")[0]
+
+        dependencies = [] # 
+
+        for dependencyTag in dependenciesTag:
+            dependency = XmlHandler.createDependency(dependencyTag) # Creates an empty dependency -> No operator, no material, dependency level
+
+    def createDependency(element):
+        """
+        Takes a dependency level element and turns it into a list that represents a dependency
+
+        Param:
+        - element : An etree element, should be a dependencyTag e.g. requires
+
+        Returns:
+        A list representing a dependency [operation, dependency level] (List of operations can be found in the description of the function getTempDep)
+        """
+
+    def createOperation(element):
+        """
+        Takes an element inside a dependency level element and turns it into an operation  
+
+        Param:
+        - element : An etree element, should be an AND, OR or material element
+
+        Returns:
+        A list representing an operation (List of operations can be found in the description of the function getTempDep)
+        """
+
+
+
 
 

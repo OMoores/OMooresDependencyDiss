@@ -1,0 +1,18 @@
+<requires>
+basic_maths
+</requires>
+<requires>
+    <OR>
+        <material>basic_maths</material>
+        <material>basic_english</material>
+    </OR>
+</requires>
+<requires>
+    <OR>
+        <AND>
+            <material>basic_maths</material>
+            <material>advanced_maths</material>
+        </AND>
+        <material>computer_science</material>
+    </OR>
+</requires>

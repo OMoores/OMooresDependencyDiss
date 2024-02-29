@@ -127,3 +127,26 @@ class TestParseXmlFiles(unittest.TestCase):
         self.assertTrue(len(list(filter(lambda x : x == 'Addition', matNames))) == 1)
         self.assertTrue(len(list(filter(lambda x : x == 'Subtraction', matNames))) == 1)
         self.assertTrue(len(list(filter(lambda x : x == 'Basic_Maths', matNames))) == 1)
+
+
+    def test_createOperation(self):
+        """
+        Description: Tests the function createOperation, this function takes an element inside a dependency level element (OR,AND or material) and turns it into an operation.
+        The different operation types can be found in the XmlHandler file in the description of the getTempDep function
+        """
+
+        # Preparing to read testCreateOperation.xml -> Does not have full structure in so cant use parseXmlFiles
+        tree = etree.parse("./tests/testAssets/testCreateOperation.xml")
+        root = tree.getroot()
+
+        # Testing to see if can create an operation for requiring a material with no operators
+        test1Root = root[0]
+        
+
+
+
+
+        test2Root = root[1]
+
+        test3Root = root[2]
+
