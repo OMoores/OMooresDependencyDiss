@@ -75,35 +75,36 @@ Exception
         # Setting name
         try:
             # Looking for fileName tag
-            for i in range(0,len(child)):
-                if child[i].tag == "fileName":
-                    mat.setName(child[i].text)
-                    break
+            fileNameTag = XmlHandler.getTag(child,"fileName")
+            mat.setName(fileNameTag[0].text)
+    
         except:
             Debug.printHighPriority("Material has failed to created, could not read name: ", mat.name)
 
 
         # Setting tags
         try:
-            tagList = []
 
-            for i in range(0,len(child)):
-                if child[i].tag == "tags":
+            tagList = []
+            tagsTag = XmlHandler.getTag(child,"tags")[0]
                     
-                    for tag in child[i]:
-                        tagList.append(tag.text)
-                    break
+            for tag in tagsTag:
+                tagList.append(tag.text)
             mat.addTags(tagList)
+
         except:
             Debug.printMediumPriority("Material has failed to add tags: ", mat.name)
 
         # Adding dependencies in string form
         try:
             # Looking through every tag in dependency tag and adding their text -> Will be used later to find actual dependencies
-            for i in range(0,len(child)):
-                if child[i].tag == "dependencies":
-                    for dep in child[i]:
-                        mat.tempDep.append([dep.text, dep.tag])
+            # dependenciesTag = XmlHandler.getTag(child,"dependencies")[0]
+           
+            # for dep in dependenciesTag:
+            #     mat.tempDep.append([dep.text, dep.tag])
+
+            tempDep = XmlHandler.getTempDep(child)
+            mat.tempDep = tempDep
         except:
             Debug.printMediumPriority("Material has failed to add dependencies: ",mat.name)
         
@@ -138,5 +139,36 @@ Exception
         Debug.printNoPriority("Setting dependencies. Current materialDict: ", materialDict.values())
 
         return returnDict
+    
+    def getTag(element, tagName : str):
+        """
+        Takes a etree element from an XML file and a tagName and returns any tags that have the name tagName
+
+        Params:
+        - element : An etree element that represents a tag e.g. dependencies
+        - tagName : The name of a tag
+
+        Returns:
+        Returns a list of all of the tags in element that have the name tagName
+        """
+
+        tags = []
+
+        for i in range(len(element)):
+            if element[i].tag == tagName:
+                tags.append(element[i])
+
+        return tags
+    
+    def getTempDep(element):
+        """
+        Takes the dependencies element from an XML file and returns a list of temp deps, dependencies before they have been formatted and added to a material
+
+        Params:
+        - element : An etree element (should be the material element) 
+
+        Returns:
+
+        """
 
 

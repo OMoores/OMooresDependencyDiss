@@ -1,7 +1,7 @@
 # Dissertation
  
-python3 -m unittest discover "tests" # Runs all tests
-python3 -m unittest tests.file # Runs all tests in a file
+python -m unittest discover "tests" # Runs all tests
+python -m unittest tests.file # Runs all tests in a file
 
 --- DEMO FILE ---
 A demo file called Demo.py can be run using the command "python ./Demo.py" whilst in the Dissertation directory
