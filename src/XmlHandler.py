@@ -121,7 +121,7 @@ Exception
         # Look through every item
         for mat in materialDict.values():
             for dependency in mat.tempDep:
-                funcReturn = XmlHandler.formatDependency(dependency, materialDict)
+                funcReturn = XmlHandler.formatDependency(dependency, returnDict)
                 # Unpacking the return of the function
                 formattedDep = funcReturn[0]
                 returnDict = funcReturn[1]
@@ -130,14 +130,6 @@ Exception
 
         return returnDict
 
-
-                
-                
-
-
-        Debug.printNoPriority("Setting dependencies. Current materialDict: ", materialDict.values())
-
-        return returnDict
     
     def formatDependency(unformattedDep, materialDict):
         """
@@ -173,10 +165,11 @@ Exception
             # Creating a new operation in the same format but with the material object instead of the name
             formattedOperation.append(None)
             matName = unformattedOperation[1]
-            if materialDict.get(matName) is not None:
+            if dictClone.get(matName) is not None:
                 formattedOperation.append(dictClone[matName])
             else:
-                materialDict[matName] = Material(matName) # Creating a placeholder material if a material with the name in the dependency does not exist
+                dictClone[matName] = Material(matName) # Creating a placeholder material if a material with the name in the dependency does not exist
+                formattedOperation.append(dictClone[matName])
             return [formattedOperation, dictClone]
         else:
             # Creating new AND or OR operation 

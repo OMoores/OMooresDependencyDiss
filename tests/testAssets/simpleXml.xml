@@ -1,0 +1,29 @@
+<materials>
+    <material>
+        <fileName>physics</fileName>
+        <tags>
+            <tag>lecture</tag>
+        </tags>
+        <dependencies>
+            <requires>
+                <OR>
+                    <material>english_lit</material>
+                    <AND>
+                        <material>english_lang</material>
+                        <material>poetry</material>
+                    </AND>
+                </OR>
+            </requires>
+            <requires>maths</requires>
+        </dependencies>
+    </material>
+    <material>
+        <fileName>english_lit</fileName>
+
+        <tags><tag>lecture</tag><tag>bad</tag></tags>
+
+        <dependencies>
+            <requires>english_lang</requires>
+        </dependencies>
+    </material>
+</materials>
