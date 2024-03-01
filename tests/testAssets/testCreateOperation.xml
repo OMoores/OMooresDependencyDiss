@@ -1,4 +1,5 @@
 <root>
+<dependencies>
     <requires>basic_maths</requires>
     <requires>
         <OR>
@@ -15,4 +16,5 @@
             <material>computer_science</material>
         </OR>
     </requires>
+</dependencies>
 </root>

@@ -4,6 +4,7 @@ from src.Material import *
 from src.Debug import *
 import xml.etree.ElementTree as etree
 
+
 class XmlHandler:
 
     def parseXmlFiles(xmlPathList : [str]) -> [Material]:
@@ -119,21 +120,78 @@ Exception
 
         # Look through every item
         for mat in materialDict.values():
-            for strDep in mat.tempDep:
-                Debug.printNoPriority("Setting dependency for ",mat.name," adding dependency '",strDep[0],"' at level ", strDep[1])
-                # Checking to see if dependency exists
-                if returnDict.get(strDep[0]) is not None:
-                    mat.addDependency(returnDict[strDep[0]],strDep[1]) # Getting the material object and parsing the dependency level
-                else:
-                    Debug.printLowPriority("Could not find material '",strDep,"' for dependency, creating placeholder material")
-                    # If material does not exist create it with placeholder tag
-                    returnDict[strDep[0]] = Material(strDep[0])
-                    returnDict[strDep[0]].addTags(["placeholder"])
+            for dependency in mat.tempDep:
+                funcReturn = XmlHandler.formatDependency(dependency, materialDict)
+                # Unpacking the return of the function
+                formattedDep = funcReturn[0]
+                returnDict = funcReturn[1]
+
+                mat.addDependency(formattedDep)
+
+        return returnDict
+
+
+                
+                
+
 
         Debug.printNoPriority("Setting dependencies. Current materialDict: ", materialDict.values())
 
         return returnDict
     
+    def formatDependency(unformattedDep, materialDict):
+        """
+        Takes a dependency as it is in tempDep and returns it with the name of the material replaced with a reference to the material,
+        if the material does not exist creates an empty material and adds it to the materialDict
+
+        Returns a list in the format [formattedDep, materialDict]
+        """
+        formattedDep = []
+
+        funcReturn = XmlHandler.formatOperation(unformattedDep[0],materialDict) # Getting the operation of the dependency formatted and the updated dict, then unpacks
+        formattedOp = funcReturn[0]
+        updatedDict = funcReturn[1]
+
+        formattedDep.append(formattedOp)
+        formattedDep.append(unformattedDep[1])
+
+        return [formattedDep,updatedDict]
+
+    def formatOperation(unformattedOperation, materialDict):
+        """
+        Takes an unformatted operation and formats it, updating the material dict if a material that is not in the dict is found
+
+        Returns [formattedOperation, materialDict]
+        """
+
+        dictClone = materialDict.copy()
+
+        formattedOperation = []
+        # This means operation is just a normal dependency, just replace the name of the mateiral with the mateiral
+        if unformattedOperation[0] == None:
+
+            # Creating a new operation in the same format but with the material object instead of the name
+            formattedOperation.append(None)
+            matName = unformattedOperation[1]
+            if materialDict.get(matName) is not None:
+                formattedOperation.append(dictClone[matName])
+            else:
+                materialDict[matName] = Material(matName) # Creating a placeholder material if a material with the name in the dependency does not exist
+            return [formattedOperation, dictClone]
+        else:
+            # Creating new AND or OR operation 
+            formattedOperation.append(unformattedOperation[0])
+            funcReturn = XmlHandler.formatOperation(unformattedOperation[1], dictClone) # Getting the new formatted op and the updated dict
+            newOperation = funcReturn[0]
+            dictClone = funcReturn[1]
+            formattedOperation.append(newOperation)
+            funcReturn = XmlHandler.formatOperation(unformattedOperation[2], dictClone)
+            newOperation = funcReturn[0]
+            dictClone = funcReturn[1]
+            formattedOperation.append(newOperation)
+
+            return [formattedOperation, dictClone]
+
     def getTag(element, tagName : str):
         """
         Takes a etree element from an XML file and a tagName and returns any tags that have the name tagName
@@ -174,10 +232,14 @@ Exception
         # Looking through every tag in dependency tag and adding their text -> Will be used later to find actual dependencies
         dependenciesTag = XmlHandler.getTag(element,"dependencies")[0]
 
-        dependencies = [] # 
+        dependencies = [] 
 
         for dependencyTag in dependenciesTag:
             dependency = XmlHandler.createDependency(dependencyTag) # Creates an empty dependency -> No operator, no material, dependency level
+            dependencies.append(dependency)
+
+        return dependencies
+
 
     def createDependency(element):
         """
@@ -190,6 +252,10 @@ Exception
         A list representing a dependency [operation, dependency level] (List of operations can be found in the description of the function getTempDep)
         """
 
+        return [XmlHandler.createOperation(element),element.tag]
+        
+        
+
     def createOperation(element):
         """
         Takes an element inside a dependency level element and turns it into an operation  
@@ -201,7 +267,20 @@ Exception
         A list representing an operation (List of operations can be found in the description of the function getTempDep)
         """
 
-
-
-
-
+        # If dependency is just a material it will have a length of 0 and the text will be the material
+        if len(element) == 0:
+            return [None, element.text]
+        elif element.tag == "OR": # An OR dependency
+            # Make sure there are only 2 materials
+            if len(element) == 2:
+                return ["OR",XmlHandler.createOperation(element[0]),XmlHandler.createOperation(element[1])]
+            else:
+                Debug.printHighPriority("When reading XML file found OR statement with more then 2 materials")
+        elif element.tag == "AND": # An AND dependency
+            # Make sure there are only 2 materials
+            if len(element) == 2:
+                return ["AND",XmlHandler.createOperation(element[0]),XmlHandler.createOperation(element[1])]
+            else:
+                Debug.printHighPriority("When reading XML file found OR statement with more then 2 materials")
+        else:
+            return XmlHandler.createOperation(element[0])

@@ -80,23 +80,22 @@ class Material:
 
     
 
-    def addDependency(self, dependency, dependencyLevel) -> int:
+    def addDependency(self, dependency) -> int:
         """
             Adds a material to the dependency list of this material if a dependency of the same name does not exist
 
             Params:
-                - dependency : A material object
-                - dependencyLevel : The level of dependency on a material
+                - dependency : A formatted dependency clause
 
             Returns:
             The number of dependencies the material has
         """
 
         if not Utility.isAinB(dependency, self.dependencies):
-            Debug.printNoPriority("Adding dependency '", dependency.name,"' to Material '",self.name,"'")
-            self.dependencies.append([dependency,dependencyLevel])
+            Debug.printLowPriority("Adding dependency: '", dependency,"' to material'",self.name,"'")
+            self.dependencies.append(dependency)
         else:
-            Debug.printLowPriority("Dependency '", dependency.name,"' already exists in material '",self.name,"'")
+            Debug.printLowPriority("Dependency '", dependency,"' already exists in material '",self.name,"'")
 
     def doesHaveTag(self, checkTag : str) -> bool:
         """

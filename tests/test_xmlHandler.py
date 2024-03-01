@@ -27,7 +27,7 @@ class TestParseXmlFiles(unittest.TestCase):
         self.assertEqual(materials[2].tags,['6'])
 
         # Checking dependencies 
-        self.assertEqual(materials[0].dependencies, [[materials[2], 'requires']])
+        self.assertEqual(materials[0].dependencies, [[[None,materials[2]],"requires"]])
         self.assertEqual(len(materials[1].dependencies), 0)
         self.assertEqual(len(materials[2].dependencies), 0)
 
@@ -129,23 +129,42 @@ class TestParseXmlFiles(unittest.TestCase):
         self.assertTrue(len(list(filter(lambda x : x == 'Basic_Maths', matNames))) == 1)
 
 
-    def test_createOperation(self):
+    def test_getTempDep(self):
         """
-        Description: Tests the function createOperation, this function takes an element inside a dependency level element (OR,AND or material) and turns it into an operation.
-        The different operation types can be found in the XmlHandler file in the description of the getTempDep function
+        Description: Test the function getTempDep. This function should return a list of formatted dependencies
+        """
+
+        tree = etree.parse("./tests/testAssets/testCreateOperation.xml")
+        root = tree.getroot()
+
+        test1Set = XmlHandler.getTempDep(root)
+
+        self.assertEqual(test1Set,[[[None,"basic_maths"],"requires"],[["OR",[None,"basic_maths"],[None,"basic_english"]],"requires"],[["OR",["AND",[None,"basic_maths"],[None,"advanced_maths"]],[None,"computer_science"]],"requires"]])
+
+        
+
+    def test_createDependency(self):
+        """
+        Description: Tests the function createDependency, this function takes an element inside a dependency level element (OR,AND or material) and turns it into a dependency
         """
 
         # Preparing to read testCreateOperation.xml -> Does not have full structure in so cant use parseXmlFiles
         tree = etree.parse("./tests/testAssets/testCreateOperation.xml")
-        root = tree.getroot()
+        root = tree.getroot()[0]
 
         # Testing to see if can create an operation for requiring a material with no operators
+        
         test1Root = root[0]
-        test1Result = XmlHandler.createOperation()
+        test1Result = XmlHandler.createDependency(test1Root)
         self.assertEqual(test1Result,[[None,"basic_maths"],"requires"])
 
-
         test2Root = root[1]
+        test2Result = XmlHandler.createDependency(test2Root)
+        self.assertEqual(test2Result,[["OR",[None,"basic_maths"],[None,"basic_english"]],"requires"])
 
         test3Root = root[2]
+        test3Result = XmlHandler.createDependency(test3Root)
+        self.assertEqual(test3Result,[["OR",["AND",[None,"basic_maths"],[None,"advanced_maths"]],[None,"computer_science"]],"requires"])
+                                                                    
+ 
 
