@@ -1,0 +1,20 @@
+<materials>
+    <material>
+        <fileName>english_lit</fileName>
+
+        <tags><tag>lecture</tag></tags>
+
+        <dependencies>
+            <requires>english_lang</requires>
+        </dependencies>
+    </material>
+    <material>
+        <fileName>science</fileName>
+
+        <tags><tag>science</tag></tags>
+
+        <dependencies>
+            <requires>english_lang</requires>
+        </dependencies>
+    </material>
+</materials>

@@ -1,0 +1,11 @@
+<materials>
+    <material>
+        <fileName>english_lang</fileName>
+
+        <tags><tag>lecture</tag></tags>
+
+        <dependencies>
+        </dependencies>
+    </material>
+
+</materials>

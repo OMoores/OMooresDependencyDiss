@@ -35,7 +35,23 @@ class TestParseXmlFiles(unittest.TestCase):
         with self.assertRaises(Error):
             materials = XmlHandler.parseXmlFiles(["./tests/testAssets/empty.xml"])
 
-        self.assertTrue(len(materials), 0)
+
+    def test_parseMultipleXml(self):
+        """
+            Description: Parse 2 xml files that contain references to each other
+
+            Expected result: The objects created should correctly reference each other even if from different files
+        """
+
+        materials = XmlHandler.parseXmlFiles(["./tests/testAssets/multiXml1.xml","./tests/testAssets/multiXml2.xml"])
+
+        self.assertEqual(materials[0].name,"english_lit")
+        self.assertEqual(materials[1].name,"science")
+        self.assertEqual(materials[2].name,"english_lang")
+
+        self.assertEqual(materials[0].dependencies[0][0][1],materials[2])
+        self.assertEqual(materials[1].dependencies[0][0][1],materials[2])
+
 
 
     def test_parseWrongOrderXml(self):
