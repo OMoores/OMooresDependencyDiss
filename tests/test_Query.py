@@ -33,3 +33,6 @@ class TestQuery(unittest.TestCase):
 
     def test_isDependencyValid(self):
         ...
+
+    def test_getMaterialInDependency(self):
+        
