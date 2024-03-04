@@ -85,7 +85,7 @@ class Material:
             Adds a material to the dependency list of this material if a dependency of the same name does not exist
 
             Params:
-                - dependency : A formatted dependency clause
+                - dependency : A formatted dependency clause e.g. [[None,material],"requires"]
 
             Returns:
             The number of dependencies the material has

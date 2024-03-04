@@ -1,0 +1,116 @@
+<materials>
+    <material>
+        <fileName>Addition</fileName>
+
+        <tags>
+            <tag>Maths</tag>
+            <tag>Workshop</tag>
+        </tags>
+
+        <dependencies>
+        </dependencies>
+    </material>
+
+    <material>
+        <fileName>Subtraction</fileName>
+
+        <tags>
+            <tag>Maths</tag>
+            <tag>Workshop</tag>
+        </tags>
+
+        <dependencies>
+        </dependencies>
+    </material>
+
+    <material>
+        <fileName>Basic_Maths</fileName>
+
+        <tags>
+            <tag>Maths</tag>
+            <tag>Lecture</tag>
+        </tags>
+
+        <dependencies>
+            <requires>
+                <AND>
+                    <material>Addition</material>
+                    <material>Subtraction</material>
+                </AND>
+            </requires>
+            <enhancedBy>Further_Maths</enhancedBy>
+        </dependencies>
+    </material>
+
+    <material>
+        <fileName>Further_Maths</fileName>
+
+        <tags>
+            <tag>Maths</tag>
+            <tag>Lecture</tag>
+        </tags>
+
+        <dependencies>
+            <requires>Basic_Maths</requires>
+        </dependencies>
+    </material>
+
+    <material>
+        <fileName>Physics</fileName>
+
+        <tags>
+            <tag>Physics</tag>
+            <tag>Lecture</tag>
+        </tags>
+
+        <dependencies>
+            <requires>Basic_Maths</requires>
+        </dependencies>
+    </material>
+
+    <material>
+        <fileName>Quantum_Physics</fileName>
+
+        <tags>
+            <tag>Physics</tag>
+            <tag>Lecture</tag>
+        </tags>
+
+        <dependencies>
+            <requires>Physics</requires>
+            <recommends>Further_Maths</recommends>
+        </dependencies>
+    </material>
+
+    <material>
+        <fileName>Mechanics</fileName>
+
+        <tags>
+            <tag>Mechanics</tag>
+            <tag>Lecture</tag>
+        </tags>
+
+        <dependencies>
+            <requires>
+                <OR>
+                    <material>Physics</material>
+                    <material>Further_Maths</material>
+                </OR>
+            </requires>
+        </dependencies>
+    </material>
+
+    <material>
+        <fileName>Engineering</fileName>
+
+        <tags>
+            <tag>Engineering</tag>
+            <tag>Lecture</tag>
+        </tags>
+
+        <dependencies>
+            <recommends>Further_Maths</recommends>
+            <requires>Mechanics</requires>
+        </dependencies>
+    </material>
+</materials>
