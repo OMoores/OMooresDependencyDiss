@@ -1,5 +1,6 @@
 # Importing Index
 from ctypes.wintypes import tagSIZE
+from sys import exception
 from tkinter.tix import Tree
 from unittest.mock import NonCallableMagicMock
 from src.Debug import *
@@ -170,21 +171,17 @@ class Material:
         An int, the index of the resolver where this material is resolved
         """
         # Looks at every index in resolver
-        for i in range(resolver):
-            if resolver[i] is None: # This index of resolver is a tag list
-                resolved = False
-                for tag in resolver[i:]: # Looking for all items apart from the first (only the tags)
-                    if not Utility.isAinB(tag,self.tags):
-                        resolved = True
-                        break
+        for i in range(len(resolver)):
+            if resolver[i][0] is None: # This index of resolver is a tag list
 
-                # If has been resolved return the current index
-
-                return i
+                # If the tags (the first item in a list of tags in the resolver is none to flag that the list is tags not a name
+                if Utility.isAEquivalentB(resolver[i][1:],self.tags):
+                    return i
             else:
-                if self.name == resolver[i]:
+                if self.name == resolver[i][0]:
                     return i
 
+        return None # If material does not resolve returns None
             
             
 
@@ -248,6 +245,7 @@ def extractOperation(operation, dependencyLevel, resolvers : [[str]]) -> [[Mater
 def resolveOperation(operation, dependencyLevel, resolvers) -> [[Material,str]]:
     """
     Takes an operation and create extracts all the materials from it using extractOperation, then checks that all the materials that are found are resolvable acording to the resolvers.
+    If they are not resolvable errors
     
 
     Params:
@@ -256,10 +254,23 @@ def resolveOperation(operation, dependencyLevel, resolvers) -> [[Material,str]]:
     - resolvers : A 2d list of names/tags that will be used to resolve any OR dependencies
 
     Returns:
-    A list of materials and their dependencies in the format [[Material, str]]
+    A list of materials and their dependencies in the format [[int],[Material, str]...]. The int represents the resolution level of this operation
     """
 
+    # This gets a list of materials then need to find the resolutionLevel of each material, if a material does not have a resolution level then error
     extractedMaterials = extractOperation(operation, dependencyLevel, resolvers) # Materials extracted from the operation in the format [material, dependency level]
+    resolutionLevel = 0
+
+    for resolution in extractedMaterials:
+        currentResolutionLevel = resolution[0].resolutionLevel 
+        if currentResolutionLevel is None:
+            raise Exception("Resolution failed")
+        if currentResolutionLevel > resolutionLevel:
+            resolutionLevel = currentResolutionLevel
+        
+    return [resolutionLevel] + extractedMaterials
+
+
 
 
     

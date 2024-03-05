@@ -51,6 +51,25 @@ class TestMaterial(unittest.TestCase):
         material5.addTags(["Man", "CSS", "HTML", "Computer science"])
         self.assertEqual(material5.tags, ["Man","Computer science", "HTML", "CSS"])
 
+    def test_resolutionLevel(self):
+        """
+            Description: Testing the function resolutionLevel, this function is called on a material and takes a set of tags or names. 
+                If the material has any of the sets of tags or the same name then returns the index of the resolver it resolves at
+        """
+
+        # Checking can resolve name and tags
+        material1 = Material("maths", ["maths","lecture"])
+        resolution1 = material1.resolutionLevel([[None,"maths","lecture"]]) # Can resolve tag
+        self.assertEqual(resolution1,0)
+        resolution2 = material1.resolutionLevel([[None,"maths","workshop"],["further_maths"],[None,"maths","lecture"]]) # Can resolve tag, doesnt resolve partial tag match 
+        self.assertEqual(resolution2,2)
+        resolution3 = material1.resolutionLevel([["maths"]]) # Can resolve name
+        self.assertEqual(resolution3,0)
+        resolution4 = material1.resolutionLevel([["english"],[None,"maths","workshop"],["maths"]]) # Can resolve name, not at first item in list
+        self.assertEqual(resolution4,2)
+        resolution5 = material1.resolutionLevel([["english"],[None,"maths","workshop"]]) # Check not matching works
+        self.assertEqual(resolution5,None)
+
 
         
 
