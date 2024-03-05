@@ -1,4 +1,7 @@
 # Importing Index
+from ctypes.wintypes import tagSIZE
+from tkinter.tix import Tree
+from unittest.mock import NonCallableMagicMock
 from src.Debug import *
 from src.Utility import *
 
@@ -125,3 +128,139 @@ class Material:
             list.append(mat.name)
 
         print(list)
+
+
+    def getDependencies(self, resolvers : [[str]]) -> [[]]:
+        """
+        Looks at this material and finds all of its dependencies and their dependency levels. Uses the resolvers to resolve any OR 
+
+        Params:
+        - material : The material whos dependencies will be extracted
+        - resolvers : A 2d list of names/tags that will be used to resolve any OR dependencies
+
+        Returns:
+        A list of materials and their dependency levels in the format [[Material, str]]
+        """
+
+        dependencies = {} # A dict with [material, dependency level] and value an empty string, get they keys to 
+
+        for dependency in self.dependencies:
+
+            # Find all of the materials and their dependency levels in each dependency
+            newDependencies = extractDependency(dependency, resolvers) # Dependencies from this itteration of the loop
+
+            # Adds dependencies if they arent already in the dependencies dict
+            for newDep in newDependencies:
+                
+                # If a dependency has not been added to the dependencies dict add it
+                if dependencies.get(newDep) is None:
+                    dependencies[newDep] = ""      
+
+        return dependencies.keys()
+    
+    def resolutionLevel(self, resolver : [[str]]) -> int:
+        """
+        Takes a 2d list of strings (a resolver) and checks the properties of the material against these. If a list starts with [None,...] it means the tags are being checked 
+        and if it starts with ["string"] It means the name is being checked. Returns the index furthest down the list where the materials name matches or all the tags are present in this material
+
+        Params:
+        - resolvers : A 2d list of names/tags that will be used to resolve any OR dependencies
+
+        Returns:
+        An int, the index of the resolver where this material is resolved
+        """
+        # Looks at every index in resolver
+        for i in range(resolver):
+            if resolver[i] is None: # This index of resolver is a tag list
+                resolved = False
+                for tag in resolver[i:]: # Looking for all items apart from the first (only the tags)
+                    if not Utility.isAinB(tag,self.tags):
+                        resolved = True
+                        break
+
+                # If has been resolved return the current index
+
+                return i
+            else:
+                if self.name == resolver[i]:
+                    return i
+
+            
+            
+
+
+
+def extractDependency(dependency : [], resolvers : [[str]] = []) -> [[Material,str]]:
+    """
+    Takes a dependency and extracts all of the materials in that dependency and returns each material with the dependency level in a list
+
+    Params:
+    - dependency : A list representing a dependency in the form [operation, dependency level]
+    - resolvers : A 2d list of names/tags that will be used to resolve any OR dependencies, defaults to an empty list
+
+    Returns:
+    A list of materials and their dependencies in the format [[Material, str]]
+    """
+
+    dependencyLevel = dependency[1]
+
+    operation = dependency[1]
+
+    
+
+def extractOperation(operation, dependencyLevel, resolvers : [[str]]) -> [[Material,str]]:
+    """
+    Takes an operation and extracts all of the materials in that operation and returns each material with the dependency level in a list
+
+    Params:
+    - operation : A list representing an operation in the form [None, material] or [AND/OR, operation, operation]
+    - dependencyLevel : The dependency level of this operation
+    - resolvers : A 2d list of names/tags that will be used to resolve any OR dependencies
+
+    Returns:
+    A list of materials and their dependencies in the format [[Material, str]]
+    """
+
+    if operation[0] == None:
+        return [operation[1], dependencyLevel]
+    if operation[0] == "AND":
+        return extractOperation(operation[1],dependencyLevel, resolvers) + extractOperation(operation[2],dependencyLevel,resolvers)
+    if operation[0] == "OR": # Try to resolve OR, if cannot errors
+
+        # If cannot find material in operation due to insufficient resolver information then picks the other set of material (assuming this set can be resolved) else errors
+        try:
+            operation1Materials = resolveOperation(operation[1], dependencyLevel, resolvers)
+        except:
+            operation1Materials = None
+
+        try:
+            operation2Materials = resolveOperation(operation[2], dependencyLevel, resolvers)
+        except:
+            operation2Materials = None
+
+        if operation1Materials == None & operation2Materials == None:
+            raise Exception("Could not resolve an OR with operations:\n"+ operation[1]+ "\n\n",operation[2]+"\n With resolvers: "+resolvers)
+        if operation1Materials == None:
+            return operation2Materials
+        return operation1Materials
+        
+
+def resolveOperation(operation, dependencyLevel, resolvers) -> [[Material,str]]:
+    """
+    Takes an operation and create extracts all the materials from it using extractOperation, then checks that all the materials that are found are resolvable acording to the resolvers.
+    
+
+    Params:
+    - operation : The operation being resolved for
+    - dependencyLevel : The dependency level of this operation
+    - resolvers : A 2d list of names/tags that will be used to resolve any OR dependencies
+
+    Returns:
+    A list of materials and their dependencies in the format [[Material, str]]
+    """
+
+    extractedMaterials = extractOperation(operation, dependencyLevel, resolvers) # Materials extracted from the operation in the format [material, dependency level]
+
+
+    
+

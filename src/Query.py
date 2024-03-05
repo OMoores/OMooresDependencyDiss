@@ -1,3 +1,4 @@
+from xmlrpc.client import Boolean
 from numpy import number
 from src.Debug import Debug
 from src.Material import Material
@@ -144,316 +145,60 @@ class Query:
 
         self.clauses.append(clause)
 
-    def solveQuery(self, material : Material) -> [Material]:
-        """
-            Returns a list of materials that are valid for this query
-            
-            Params:
-            - material : The material the query is being applied to
+  
 
-            Returns:
-            A list of materials that the query selects
-        """
-    
-        solvedMaterials = []
-        currentMaterials = [material] 
-        """
-            This will hold the materials that are being examined in the main loop, 
-            at the end of the main loop materials that fullfil the clauses of the query will replace the materials in this list and then be examined in the next itteration of the loop
-        """
 
-        # While all possible new dependencies are already in the solved list
-        while Utility.isASubsetB(currentMaterials, solvedMaterials):
-            """
-                This is the main loop of the functions 
-            """
 
-            subMaterials = [] # A list of the sub materials of the current list of materials
+def queryDependencies(materials : [Material], query : Query, resolvers : [[str]]):
+    """
+    Takes a set of materials and examines their dependencies, finding a list of materials that all satisfy a query.
+    All materials must be linked to the original materials by a set of materials that fulfil the query.
 
-            # Look through current materials and check dependencies against clauses to find valid dependencies, then add to subMaterials
-            validMaterials = Query.findValidMaterials(currentMaterials, self)
-            
-            # Create a list of the materials in validMaterials that are not in solvedMaterials -> uniqueMaterials
-            uniqueMaterials = Utility.findAnotinB(validMaterials, solvedMaterials)
+    The resolvers parameter contains a list that will be used to resolve OR statements.
+    [[None,tag1,tag2],[None,tag3,tag4]] -> Will look at the tags of a material. A material with tag1 and tag2 will be chosen in the OR, if none have these then a material with tag3 and tag4 will be chosen
+    [["name"],[None,...]] -> Will look if either of the materials have the name "name", if none do then looks at the next resolver
 
-            # Add uniqueMaterials to solvedMaterials
-            solvedMaterials += uniqueMaterials
+    If none have these tags then throws an error
 
-            # Set current materials to the uniqueMaterials
-            currentMaterials = uniqueMaterials  # At the end of the loop set the sub materials to be looked at in the next loop to the applicable materials from this loop
+    Params:
+    - materials : A list of materials that will be queried, the materials returned will all be subdependencies of at least one of these materials
+    - query : A query, only materials that satsify this query will be returned
+    - resolvers : This will contain a 2d list of tags that will be used to resolve OR statements
 
-        return solvedMaterials
-    
-    def searchMaterials(materials : [Material], query) -> [Material]:
-        """
-        Finds any material that fulfils the query
+    Returns a list of materials that fulfil the query
+    """
 
-        Params:
-        - materials : A set of materials
-        - query : A query (ignores any dependencyLevels in the query)
+    # Both dicts containt material name as keys and materials as the value, they are used to store any material that has been searched and any material that is valid for the query
+    # These are faster to access then a list (Think they use hash tables) and are used to check if a material has been looked at before 
+    searchedMaterials = {} 
+    validMaterials = {} 
 
-        Returns:
-        A set of materials that fulfil the query
-        """
+    # These will hold all the materials that are going to be examined in the next itteration of the main loop
+    searchingMaterials = materials
+
+    # Will stop when there are no materials left to search
+    while len(searchingMaterials) > 0:
+
+        newMaterials = [] # Materials that have been found that will be searched in the next itteration of the loop
+
+        for material in searchingMaterials:
+
+
+
+
         
-        returnList = []
-
-        for mat in materials:
-
-            if Query.isQueryValid([mat,"*"], query):
-                if not Utility.isAinB(mat,returnList):   
-                    returnList.append(mat)
+            
         
-        return returnList
 
-    def queryDependencies(materials : [Material], query) -> [Material]:
-        """
-            Finds all of the subdependencies of a set of material according to a query
 
-            Params:
-            - materials : A set of materials
-            - query : A query
-
-            Returns:
-            A set of materials that represents a material and all of its sub dependencies that fulfil the conditions of the query
-        """
-        # Create a dictionary to hold all dependencies 
-        dependencyDict = {}
-
-        # Add current materials to dict
-        for mat in materials:
-            dependencyDict[mat.id] = mat
-
-        # Whilst findValidMaterials finds new materials add these new materials to the dictionary
-        matsToBeSearched = materials.copy()
-        newItemsAdded = True
-
-        while newItemsAdded:
-            # Set newItemsAdded to false so if no new items are added the loop does not continue
-            newItemsAdded = False
-            # Find new set of valid materials
-            validMaterials = Query.findValidMaterials(matsToBeSearched, query)
-
-            # Check to see if any are new materials
-            for mat in validMaterials:
-                
-                if not mat.id in dependencyDict.keys():
-                    # if material is not in dictionary already then add it to the dict
-                    dependencyDict[mat.id] = mat
-                    matsToBeSearched.append(mat)
-                    newItemsAdded = True
-
-        # Turn dictionary to list
-        returnList = list(dependencyDict.values())
-        # Return list
-        return returnList
-
-    def findValidMaterials(materials : [Material], query) -> [Material]:
-        """
-            Checks a set of materials against a query and returns their dependent materials that fulfil the query, does not return any materials in the materials parameter
-            e.g. materials = [A,B], valid materials are [B,C,D] returns [C,D]
-
-            Params:
-            - materials : A set of materials
-            - query : A query
-
-            Returns:
-            A set of materials that fulfil the query
-        """
-        validMaterialDict = {} # This will be used to hold materials that have already been found, is only used because it is more efficient then searching a list
-        validMaterialList = [] # This will be used to hold materials that fulfil the query and will be returned
-
-        # Look through every material
-        for mat in materials:
-
-            # Gets a list of this materials direct dependencies
-            directDeps = Query.getDirectDependencies(mat) # This could have duplicate dependencies, will not effect result of function but could increase time to complete
-
-            for dep in directDeps:
-                # If material is not already in dict then check if it is valid, if it is add it to the list to return (checking if material is in dict means less useless function calls)
-                if validMaterialDict[dep[0]] is None:
-                    if Query.isQueryValid(dep, query):
                     
-                        validMaterialDict[dep[0]] = dep[1]
-                        validMaterialList.append(dep[0])
-                            
 
-        return validMaterialList
-    
-    def getDirectDependencies(material : Material) -> [Material]:
-        """
-        Gets all the direct dependencies of a material
-
-        Params:
-        - material : The material being looked at
-
-        Returns:
-        A list of materials and their dependency levels [material, dependencyLevel]
-        """
-
-        dependencies = []
-
-        for dep in material:    
-            
-            # Gets all materials in this dependency
-            matsInDep = Query.getMaterialsInDependency(dep)
-
-            # Pairs up all of these with a dependency level and adds to dependencies list
-            for item in matsInDep:
-                dependencies += [item,dep[1]]
-
-        return dependencies
-
-
-
-
-    def getMaterialsInDependency(dependency) -> [Material]:
-        """
-        Takes a dependency and finds all materials contained in the dependency then returns a list of these dependencites
-
-        Params: 
-        - dependency : A dependency in the form [operation,dependencyLevel]
-
-        Returns:
-        A list of materials
-        """
-
-        return Query.getMaterialsInOperation(dependency[0])
-
-        
-    def getMaterialsInOperation(operation) -> [Material]:
-        """
-        Takes an operation [Operator, material, optional material] and returns any materials present in it
-
-        Params:
-        - operation : An operation
-
-        Returns:
-        A list of materials
-        """
-
-
-        if operation[0] == None:
-            return operation[1]
-        else:
-            return Query.getMaterialsInOperation(operation[1]) + Query.getMaterialsInOperation(operation[2])
-
-
-    
-    def isQueryValid(dependency : [Material, str], query) -> bool:
-        """
-            Checks to see if a material is valid acording to a query
-            
-            If the dependency levels are not valid returns false, then checks to see if any variables are false if none are returns true 
-
-            Params:
-            - dependency : A dependency from a material [Material, dependencyLevel]
-            - query : A query
-            Returns:
-            A boolean representing if the material fulfils the query
-        """
-
-        # Query -> Clause -> Variable -> Tag
-        if not len(query.clauses) > 0:
-            return False
-        
-
-        # For each clause in query
-        for clause in query.clauses:
-            # Check to see if valid dependency level
-            if Query.isClauseValid(dependency, clause):
-                return True
                     
-                
-        return False               
 
-        
-    def isClauseValid(dependency : [Material, str], clause) -> bool:
-        """
-        Checks to see if a material is true for a clause
+                    
 
-        Params:
-        - clause : A clause
-        - dependency : A list with a material and a dependency level [material : Material, dependencyLevel : str]
-
-        Returns:
-        A boolean representing if the material fulfils the clause
-        """
-
-        if not Query.isDependencyValid(dependency[1], clause):
-            return False
-
-        for variable in clause.variables:
-
-            if not Query.isVariableValid(variable, dependency[0]):
-                return False
-            
-        return True
-
-
-    def isVariableValid(variable : [str], material : Material) -> bool:
-        """
-        Checks to see if a variable is true for a specific material, the variable is true if the material has any of the tags in the variable
-        Handles wildcard and negation (*,-)
-        If the variable is empty returns false
-        
-        Params:
-        - variable : A list of tags
-        - material : A material
-
-        Returns:
-        If a variable is fulfilled by the material
-        """
-        if len(variable) < 1:
-            return False
-
-        for tag in variable:
-
-            if len(tag) < 1:
-                continue
-            
-            if tag == "*": # Check for wildcard
-                return True
-            if tag[0] == "-": # Check for negation
-                if not material.doesHaveTag(tag[1:]):
-                    return True
-            if material.doesHaveTag(tag): # If material has any of the tags the variable is true
-                return True
-            
-        return False
-
-
-    def isDependencyValid(dependenyLevel : str, clause : Clause) -> bool:
-        """
-        Checks to see if a dependency level fulfils the dependency levels of a clause
-        Handles wildcard and negation (*,-)
-
-        Params:
-        - dependencyLevel : A dependency level
-        - clause : A clause
-
-        Returns:
-        A boolean representing if the dependency level fulfils the dependency levels of the query
-        """
-        if dependenyLevel == "*":
-            return True
-        
-        # Look in each clause and get the dependency levels
-        for dep in clause.dependencyLevels:
+                        
     
-            if dep[0] == "*":
-                return True
-            if dep[0] == "-":
-                if str(dep[1:]) != str(dependenyLevel):
-                    return True
-            else:
-                if dep == dependenyLevel:
-                    return True
-
-        return False
-
-
-
     
 
 
@@ -463,3 +208,78 @@ class Query:
 
 
             
+
+
+
+def isDependencyValid(material, dependencyLevel : str, query : Query) -> Boolean:
+    """
+    Takes a material and its dependency level and checks if it is valid for a query
+
+    params:
+    - material : The material being checked against the query
+    - dependencyLevel : The dependency level of the material
+    - query : The query the material is being checked against
+
+    Returns:
+    A boolean representing if the material is valid 
+    """
+        
+
+    
+def getDirectDependencies(material : Material) -> [Material]:
+    """
+    Gets all the direct dependencies of a material
+
+    Params:
+    - material : The material being looked at
+
+    Returns:
+    A list of materials and their dependency levels [material, dependencyLevel]
+    """
+
+    dependencies = []
+
+    for dep in material:    
+        
+        # Gets all materials in this dependency
+        matsInDep = Query.getMaterialsInDependency(dep)
+
+        # Pairs up all of these with a dependency level and adds to dependencies list
+        for item in matsInDep:
+            dependencies += [item,dep[1]]
+
+    return dependencies
+
+
+
+def getMaterialsInDependency(dependency) -> [Material]:
+    """
+    Takes a dependency and finds all materials contained in the dependency then returns a list of these dependencies
+
+    Params: 
+    - dependency : A dependency in the form [operation,dependencyLevel]
+
+    Returns:
+    A list of materials
+    """
+
+    return getMaterialsInOperation(dependency[0])
+
+    
+def getMaterialsInOperation(operation) -> [Material]:
+    """
+    Takes an operation [Operator, material, optional material] and returns any materials present in it
+
+    Params:
+    - operation : An operation
+
+    Returns:
+    A list of materials
+    """
+
+
+    if operation[0] == None:
+        return operation[1]
+    else:
+        return getMaterialsInOperation(operation[1]) + getMaterialsInOperation(operation[2])
+

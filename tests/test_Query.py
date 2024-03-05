@@ -1,4 +1,5 @@
 import unittest
+from Query import Clause, Query
 from src.XmlHandler import *
 from src.Utility import *
 from src.Recommendations import selectMaterialWithName
@@ -19,8 +20,15 @@ class TestQuery(unittest.TestCase):
         self.Subtraction = selectMaterialWithName("Subtraction",self.files)
         self.Addition = selectMaterialWithName("Addition",self.files)
 
+        self.lectureQuery = Query()
+        allLectureClause = Clause()
+        allLectureClause.addDependencyLevel("*")
+        allLectureClause.addVariable(["*"])
+        self.lectureQuery.addClause(allLectureClause)
+
     def test_queryDependency(self):
-        ...
+        
+        Query.queryDependencies()
 
     def test_isQueryValid(self):
         ...
@@ -33,6 +41,3 @@ class TestQuery(unittest.TestCase):
 
     def test_isDependencyValid(self):
         ...
-
-    def test_getMaterialInDependency(self):
-        
