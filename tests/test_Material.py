@@ -1,3 +1,4 @@
+from pydoc import resolve
 import unittest
 from src.Material import *
 
@@ -69,6 +70,19 @@ class TestMaterial(unittest.TestCase):
         self.assertEqual(resolution4,2)
         resolution5 = material1.resolutionLevel([["english"],[None,"maths","workshop"]]) # Check not matching works
         self.assertEqual(resolution5,None)
+
+    def test_getDependencies(self):
+        ...
+    
+    def test_resolveOperation(self):
+        
+        # Testing to check resolves name correctly
+        material1 = Material("maths", ["maths","lecture"])
+        operation1 = [None,material1]
+        resolvers1 = [["maths"]]
+        resolvers2 = [[None,"maths","workshop"],["maths"]]
+        self.assertEqual(resolveOperation(operation1, "requires", resolvers1),[[0],[material1,"requires"]])
+        
 
 
         

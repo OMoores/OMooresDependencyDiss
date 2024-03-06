@@ -200,14 +200,17 @@ def extractDependency(dependency : [], resolvers : [[str]] = []) -> [[Material,s
     """
 
     dependencyLevel = dependency[1]
-
     operation = dependency[1]
+
+    
+    return extractOperation(operation, dependencyLevel, resolvers)
 
     
 
 def extractOperation(operation, dependencyLevel, resolvers : [[str]]) -> [[Material,str]]:
     """
-    Takes an operation and extracts all of the materials in that operation and returns each material with the dependency level in a list
+    Takes an operation and extracts all of the materials in that operation and returns each material with the dependency level in a list.
+    If a decision cannot be made returns an error
 
     Params:
     - operation : A list representing an operation in the form [None, material] or [AND/OR, operation, operation]
@@ -236,13 +239,21 @@ def extractOperation(operation, dependencyLevel, resolvers : [[str]]) -> [[Mater
             operation2Materials = None
 
         if operation1Materials == None & operation2Materials == None:
-            raise Exception("Could not resolve an OR with operations:\n"+ operation[1]+ "\n\n",operation[2]+"\n With resolvers: "+resolvers)
-        if operation1Materials == None:
-            return operation2Materials
-        return operation1Materials
+            raise Exception("Could not resolve an OR with operations:\n"+ operation[1]+ "\n",operation[2]+"\n With resolvers: "+resolvers)
+        elif operation1Materials == None:
+            return operation2Materials[1] # Item 0 return from resolve operations is the resolution level
+        elif operation2Materials == None:
+            return operation1Materials[1]
+        
+        if operation1Materials[0] > operation2Materials[0]: # Higher resolution level means lower priority
+            return operation2Materials[1]
+        elif operation2Materials[0] > operation1Materials[0]:
+            return operation1Materials[1]
+        else:
+            raise Exception("Could not resolve an OR with operations:\n"+ operation[1]+ "\n",operation[2]+"\nWith resolvers: "+resolvers + "\nBoth had same resolution level so no decision could be made")
         
 
-def resolveOperation(operation, dependencyLevel, resolvers) -> [[Material,str]]:
+def resolveOperation(operation, dependencyLevel, resolvers) -> [[int],[Material,str],...]:
     """
     Takes an operation and create extracts all the materials from it using extractOperation, then checks that all the materials that are found are resolvable acording to the resolvers.
     If they are not resolvable errors
@@ -262,7 +273,7 @@ def resolveOperation(operation, dependencyLevel, resolvers) -> [[Material,str]]:
     resolutionLevel = 0
 
     for resolution in extractedMaterials:
-        currentResolutionLevel = resolution[0].resolutionLevel 
+        currentResolutionLevel = resolution[0].resolutionLevel()
         if currentResolutionLevel is None:
             raise Exception("Resolution failed")
         if currentResolutionLevel > resolutionLevel:
