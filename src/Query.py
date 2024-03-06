@@ -182,32 +182,9 @@ def queryDependencies(materials : [Material], query : Query, resolvers : [[str]]
         newMaterials = [] # Materials that have been found that will be searched in the next itteration of the loop
 
         for material in searchingMaterials:
+            ...
 
 
-
-
-        
-            
-        
-
-
-                    
-
-                    
-
-                    
-
-                        
-    
-    
-
-
-
-
-
-
-
-            
 
 
 
@@ -223,6 +200,7 @@ def isDependencyValid(material, dependencyLevel : str, query : Query) -> Boolean
     Returns:
     A boolean representing if the material is valid 
     """
+    ...
         
 
     

@@ -1,8 +1,4 @@
 # Importing Index
-from ctypes.wintypes import tagSIZE
-from sys import exception
-from tkinter.tix import Tree
-from unittest.mock import NonCallableMagicMock
 from src.Debug import *
 from src.Utility import *
 
@@ -131,13 +127,13 @@ class Material:
         print(list)
 
 
-    def getDependencies(self, resolvers : [[str]]) -> [[]]:
+    def getDependencies(self, resolvers : [[str]] = []) -> [[]]:
         """
         Looks at this material and finds all of its dependencies and their dependency levels. Uses the resolvers to resolve any OR 
 
         Params:
         - material : The material whos dependencies will be extracted
-        - resolvers : A 2d list of names/tags that will be used to resolve any OR dependencies
+        - resolvers : A 2d list of names/tags that will be used to resolve any OR dependencies (defaults to [])
 
         Returns:
         A list of materials and their dependency levels in the format [[Material, str]]
@@ -147,17 +143,21 @@ class Material:
 
         for dependency in self.dependencies:
 
+            
+
             # Find all of the materials and their dependency levels in each dependency
             newDependencies = extractDependency(dependency, resolvers) # Dependencies from this itteration of the loop
-
             # Adds dependencies if they arent already in the dependencies dict
             for newDep in newDependencies:
+
+                # An items id in the dict is their name + their dep level
+                id = newDep[0].name + newDep[1]
                 
                 # If a dependency has not been added to the dependencies dict add it
-                if dependencies.get(newDep) is None:
-                    dependencies[newDep] = ""      
+                if dependencies.get(id) is None:
+                    dependencies[id] = newDep
 
-        return dependencies.keys()
+        return list(dependencies.values())
     
     def resolutionLevel(self, resolver : [[str]]) -> int:
         """
@@ -175,7 +175,7 @@ class Material:
             if resolver[i][0] is None: # This index of resolver is a tag list
 
                 # If the tags (the first item in a list of tags in the resolver is none to flag that the list is tags not a name
-                if Utility.isAEquivalentB(resolver[i][1:],self.tags):
+                if Utility.isASubsetB(resolver[i][1:],self.tags):
                     return i
             else:
                 if self.name == resolver[i][0]:
@@ -200,14 +200,14 @@ def extractDependency(dependency : [], resolvers : [[str]] = []) -> [[Material,s
     """
 
     dependencyLevel = dependency[1]
-    operation = dependency[1]
+    operation = dependency[0]
 
     
     return extractOperation(operation, dependencyLevel, resolvers)
 
     
 
-def extractOperation(operation, dependencyLevel, resolvers : [[str]]) -> [[Material,str]]:
+def extractOperation(operation, dependencyLevel, resolvers : [[str]] = []) -> [[Material,str]]:
     """
     Takes an operation and extracts all of the materials in that operation and returns each material with the dependency level in a list.
     If a decision cannot be made returns an error
@@ -222,7 +222,7 @@ def extractOperation(operation, dependencyLevel, resolvers : [[str]]) -> [[Mater
     """
 
     if operation[0] == None:
-        return [operation[1], dependencyLevel]
+        return [[operation[1], dependencyLevel]]
     if operation[0] == "AND":
         return extractOperation(operation[1],dependencyLevel, resolvers) + extractOperation(operation[2],dependencyLevel,resolvers)
     if operation[0] == "OR": # Try to resolve OR, if cannot errors
@@ -238,8 +238,9 @@ def extractOperation(operation, dependencyLevel, resolvers : [[str]]) -> [[Mater
         except:
             operation2Materials = None
 
-        if operation1Materials == None & operation2Materials == None:
-            raise Exception("Could not resolve an OR with operations:\n"+ operation[1]+ "\n",operation[2]+"\n With resolvers: "+resolvers)
+
+        if operation1Materials == None and operation2Materials == None:
+            raise Exception("Could not resolve an OR with operations:\n", operation[1], "\n",operation[2],"\n With resolvers: ",resolvers)
         elif operation1Materials == None:
             return operation2Materials[1] # Item 0 return from resolve operations is the resolution level
         elif operation2Materials == None:
@@ -250,10 +251,10 @@ def extractOperation(operation, dependencyLevel, resolvers : [[str]]) -> [[Mater
         elif operation2Materials[0] > operation1Materials[0]:
             return operation1Materials[1]
         else:
-            raise Exception("Could not resolve an OR with operations:\n"+ operation[1]+ "\n",operation[2]+"\nWith resolvers: "+resolvers + "\nBoth had same resolution level so no decision could be made")
+            raise Exception("Could not resolve an OR with operations:\n",operation[1], "\n",operation[2],"\nWith resolvers: ",resolvers, "\nBoth had same resolution level so no decision could be made")
         
 
-def resolveOperation(operation, dependencyLevel, resolvers) -> [[int],[Material,str],...]:
+def resolveOperation(operation, dependencyLevel, resolvers) -> [int,[[Material,str],...]]:
     """
     Takes an operation and create extracts all the materials from it using extractOperation, then checks that all the materials that are found are resolvable acording to the resolvers.
     If they are not resolvable errors
@@ -265,7 +266,7 @@ def resolveOperation(operation, dependencyLevel, resolvers) -> [[int],[Material,
     - resolvers : A 2d list of names/tags that will be used to resolve any OR dependencies
 
     Returns:
-    A list of materials and their dependencies in the format [[int],[Material, str]...]. The int represents the resolution level of this operation
+    A list of materials and their dependencies in the format [int,[[Material, str]]]. The int represents the resolution level of this operation
     """
 
     # This gets a list of materials then need to find the resolutionLevel of each material, if a material does not have a resolution level then error
@@ -273,13 +274,13 @@ def resolveOperation(operation, dependencyLevel, resolvers) -> [[int],[Material,
     resolutionLevel = 0
 
     for resolution in extractedMaterials:
-        currentResolutionLevel = resolution[0].resolutionLevel()
+        currentResolutionLevel = resolution[0].resolutionLevel(resolvers)
         if currentResolutionLevel is None:
             raise Exception("Resolution failed")
         if currentResolutionLevel > resolutionLevel:
             resolutionLevel = currentResolutionLevel
         
-    return [resolutionLevel] + extractedMaterials
+    return [resolutionLevel, extractedMaterials]
 
 
 
