@@ -182,13 +182,14 @@ def queryDependencies(materials : [Material], query : Query, resolvers : [[str]]
         newMaterials = [] # Materials that have been found that will be searched in the next itteration of the loop
 
         for material in searchingMaterials:
-            ...
+            dependencies = material.getDependencies(resolvers)
 
 
 
 
 
-def isDependencyValid(material, dependencyLevel : str, query : Query) -> Boolean:
+
+def isDependencyValid(material, dependencyLevel : str, query : Query) -> bool:
     """
     Takes a material and its dependency level and checks if it is valid for a query
 
@@ -200,64 +201,46 @@ def isDependencyValid(material, dependencyLevel : str, query : Query) -> Boolean
     Returns:
     A boolean representing if the material is valid 
     """
-    ...
+
+    for clause in query.clauses:
+        if isClauseValid(material,dependencyLevel):
+            return True
         
-
+    return False
     
-def getDirectDependencies(material : Material) -> [Material]:
+
+def isClauseValid(material, dependencyLevel : str, clause : Clause) -> bool:
     """
-    Gets all the direct dependencies of a material
-
-    Params:
-    - material : The material being looked at
-
-    Returns:
-    A list of materials and their dependency levels [material, dependencyLevel]
+    Takes a material, a dependencyLevel and a clause and checks if the material is valid for the clause
     """
+    
+    if not isDependencyLevelValid(dependencyLevel,clause):
+        return False
 
-    dependencies = []
-
-    for dep in material:    
+    for variable in clause.variables:
+        if not isVariableValid(material,variable):
+            return False
         
-        # Gets all materials in this dependency
-        matsInDep = Query.getMaterialsInDependency(dep)
+    return True
 
-        # Pairs up all of these with a dependency level and adds to dependencies list
-        for item in matsInDep:
-            dependencies += [item,dep[1]]
-
-    return dependencies
-
-
-
-def getMaterialsInDependency(dependency) -> [Material]:
+def isVariableValid(material, variable : []) -> bool:
     """
-    Takes a dependency and finds all materials contained in the dependency then returns a list of these dependencies
-
-    Params: 
-    - dependency : A dependency in the form [operation,dependencyLevel]
-
-    Returns:
-    A list of materials
+    Takes a variable (a set of tags) and returns true if the material has any of these tags
     """
 
-    return getMaterialsInOperation(dependency[0])
-
+    for tag in material.tags:
+        if Utility.isAinB(tag,variable):
+            return True
+    return False
     
-def getMaterialsInOperation(operation) -> [Material]:
+    
+    
+
+def isDependencyLevelValid(dependencyLevel : str, clause : Clause) -> bool:
     """
-    Takes an operation [Operator, material, optional material] and returns any materials present in it
-
-    Params:
-    - operation : An operation
-
-    Returns:
-    A list of materials
+    Takes a clause and a dependency level and returns if the dependency is valid for the clause
     """
 
-
-    if operation[0] == None:
-        return operation[1]
-    else:
-        return getMaterialsInOperation(operation[1]) + getMaterialsInOperation(operation[2])
-
+    if Utility.isAinB(dependencyLevel,clause.dependencyLevels):
+        return True
+    return False
