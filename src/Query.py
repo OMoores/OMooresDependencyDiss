@@ -175,6 +175,10 @@ def queryDependencies(materials : [Material], query : Query, resolvers : [[str]]
     # These will hold all the materials that are going to be examined in the next itteration of the main loop
     searchingMaterials = materials
 
+    # Adding materials to validMaterials
+    for mat in searchingMaterials:
+        validMaterials[mat.name] = mat
+
     # Will stop when there are no materials left to search
     while len(searchingMaterials) > 0:
 

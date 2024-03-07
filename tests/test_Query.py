@@ -68,7 +68,11 @@ class TestQuery(unittest.TestCase):
 
     def test_queryDependency(self):
         
-        self.assertTrue(Utility.isAEquivalentB(queryDependencies([self.Further_Maths],self.allMatQuery),[self.Further_Maths,self.Basic_Maths,self.Addition,self.Subtraction]))
+        self.assertTrue(Utility.isAEquivalentB(queryDependencies([self.Further_Maths],self.allMatQuery),[self.Further_Maths,self.Basic_Maths,self.Addition,self.Subtraction])) # Checking wildcard works
+        self.assertTrue(Utility.isAEquivalentB(queryDependencies([self.Mechanics],self.allMatQuery,[[None,"Maths"]]),[self.Mechanics,self.Further_Maths,self.Basic_Maths,self.Addition,self.Subtraction])) # Test works with OR
+        self.assertTrue(Utility.isAEquivalentB(queryDependencies([self.Mechanics],self.allMatQuery,[[None,"Physics"]]),[self.Mechanics,self.Further_Maths,self.Basic_Maths,self.Addition,self.Subtraction,self.Physics])) 
+        self.assertTrue(Utility.isAEquivalentB(queryDependencies([self.Engineering],self.requiredNotMechanicsORLectureQuery,[[None,"Physics"]]),[self.Engineering,self.Physics,self.Mechanics,self.Basic_Maths,self.Addition,self.Subtraction]))
+
 
     def test_isQueryValid(self):
 
