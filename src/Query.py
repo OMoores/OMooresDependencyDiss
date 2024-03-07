@@ -149,7 +149,7 @@ class Query:
 
 
 
-def queryDependencies(materials : [Material], query : Query, resolvers : [[str]]):
+def queryDependencies(materials : [Material], query : Query, resolvers : [[str]] = []):
     """
     Takes a set of materials and examines their dependencies, finding a list of materials that all satisfy a query.
     All materials must be linked to the original materials by a set of materials that fulfil the query.
@@ -168,10 +168,9 @@ def queryDependencies(materials : [Material], query : Query, resolvers : [[str]]
     Returns a list of materials that fulfil the query
     """
 
-    # Both dicts containt material name as keys and materials as the value, they are used to store any material that has been searched and any material that is valid for the query
     # These are faster to access then a list (Think they use hash tables) and are used to check if a material has been looked at before 
-    searchedMaterials = {} 
-    validMaterials = {} 
+    searchedMaterials = {}  # Key is materialname+dependencylevel value is an empty string
+    validMaterials = {} # Key is material name value is the material
 
     # These will hold all the materials that are going to be examined in the next itteration of the main loop
     searchingMaterials = materials
@@ -183,13 +182,41 @@ def queryDependencies(materials : [Material], query : Query, resolvers : [[str]]
 
         for material in searchingMaterials:
             dependencies = material.getDependencies(resolvers)
+            
+            # Look through every new dependency
+            for dependency in dependencies:
+
+                # Check if dependency is new
+                if validMaterials.get(dependency[0].name) is not None:
+                    continue
+                # If material is in searched material with the correct dependency level it has already been searched so do not search again
+                if searchedMaterials.get(dependency[0].name+dependency[1]) is not None:
+                    continue
+                # Add material to searched materials
+                searchedMaterials[dependency[0].name+dependency[1]] = ""
+                # Check if material is valid with its dependency
+                if isQueryValid(dependency[0],dependency[1],query):
+                    validMaterials[dependency[0].name] = dependency[0]
+                    # This material is valid so add it to newMaterials
+                    newMaterials.append(dependency[0])
+                 
+
+                
+
+        # The valid materials that have been found will be looked at in the next loop
+        searchingMaterials = newMaterials
+
+    return validMaterials.values()
+                
+                
 
 
 
 
 
 
-def isDependencyValid(material, dependencyLevel : str, query : Query) -> bool:
+
+def isQueryValid(material, dependencyLevel : str, query : Query) -> bool:
     """
     Takes a material and its dependency level and checks if it is valid for a query
 
@@ -203,7 +230,7 @@ def isDependencyValid(material, dependencyLevel : str, query : Query) -> bool:
     """
 
     for clause in query.clauses:
-        if isClauseValid(material,dependencyLevel):
+        if isClauseValid(material,dependencyLevel, clause):
             return True
         
     return False
@@ -223,14 +250,21 @@ def isClauseValid(material, dependencyLevel : str, clause : Clause) -> bool:
         
     return True
 
-def isVariableValid(material, variable : []) -> bool:
+def isVariableValid(material, variables : []) -> bool:
     """
     Takes a variable (a set of tags) and returns true if the material has any of these tags
     """
 
-    for tag in material.tags:
-        if Utility.isAinB(tag,variable):
-            return True
+    # Check for wildcard
+    if Utility.isAinB("*",variables):
+        return True
+    # Check for negation
+    for variable in variables:
+        if variable[0] == "-":
+            if not Utility.isAinB(variable[1:],material.tags):
+                return True
+        elif Utility.isAinB(variable,material.tags):
+            return True 
     return False
     
     
@@ -240,6 +274,14 @@ def isDependencyLevelValid(dependencyLevel : str, clause : Clause) -> bool:
     """
     Takes a clause and a dependency level and returns if the dependency is valid for the clause
     """
+
+    for depLvl in clause.dependencyLevels:
+        if depLvl[0] == "-":
+            if not dependencyLevel == depLvl[1:]:
+                return True
+
+    if Utility.isAinB("*",clause.dependencyLevels):
+        return True
 
     if Utility.isAinB(dependencyLevel,clause.dependencyLevels):
         return True
