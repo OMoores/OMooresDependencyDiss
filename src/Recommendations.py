@@ -1,9 +1,9 @@
 from src.Utility import Utility
 from src.Material import Material
-from src.Query import Clause, Query
+from src.Query import *
 from z3 import *
 
-def recommendOrder(materials : [Material], dependencyPriority : [str]) -> [Material]:
+def recommendOrder(materials : [Material], dependencyPriority : [str], resolvers = []) -> [Material]:
     """
     Takes a set of materials and recommends an order to learn the materials in based of the materials 
     dependencies and the priority of the dependency levels
@@ -21,7 +21,7 @@ def recommendOrder(materials : [Material], dependencyPriority : [str]) -> [Mater
     solver = Solver()
 
 
-    depWeb = createDependencyWeb(materials,dependencyPriority)
+    depWeb = createDependencyWeb(materials,dependencyPriority, resolvers)
 
     # Creates a list of empty integers for the z3 solver, these will represent the index of materials
     order = [Int(f'{index}') for index in range(len(materials))]
@@ -55,7 +55,7 @@ def recommendOrder(materials : [Material], dependencyPriority : [str]) -> [Mater
     
     
 
-def isRecommendationValid(recommendation : [Material], dependencyPriority : [str], depWeb = None) -> bool:
+def isRecommendationValid(recommendation : [Material], dependencyPriority : [str], depWeb = None, resolvers = []) -> bool:
     """
     Takes a set of materials and returns if the order they are in is a valid order to recommend the materials in
 
@@ -69,7 +69,7 @@ def isRecommendationValid(recommendation : [Material], dependencyPriority : [str
     """
 
     if depWeb == None:
-        depWeb = createDependencyWeb(recommendation, dependencyPriority)
+        depWeb = createDependencyWeb(recommendation, dependencyPriority,resolvers)
 
 
     for matAIndex in range(0,len(recommendation)):
@@ -94,7 +94,7 @@ def isRecommendationValid(recommendation : [Material], dependencyPriority : [str
 
 
 
-def createDependencyWeb(materials : [Material], dependencyPriority : [str]) -> [[int]]: 
+def createDependencyWeb(materials : [Material], dependencyPriority : [str], resolvers = []) -> [[int]]: 
     """
     Creates a datastructure that shows the indirect dependency level of every material on every other material
 
@@ -115,7 +115,7 @@ def createDependencyWeb(materials : [Material], dependencyPriority : [str]) -> [
     for matIndex in range(0,len(materials)):
         matDepArray = []
 
-        indirectDeps = findIndirectDependencyLevels(materials[matIndex],dependencyPriority)      
+        indirectDeps = findIndirectDependencyLevels(materials[matIndex],dependencyPriority, resolvers)      
 
         # Ordering the dependencies 
         for orderIndex in range(0,len(materials)):
@@ -138,7 +138,7 @@ def createDependencyWeb(materials : [Material], dependencyPriority : [str]) -> [
 
 
 
-def findIndirectDependencyLevels(material : Material, dependencyPriority : [str]) -> [[Material]]:
+def findIndirectDependencyLevels(material : Material, dependencyPriority : [str], resolvers = []) -> [[Material]]:
     """
     Finds the indirect dependency levels of a material on every other material it is indirectly dependent on.
     
@@ -166,7 +166,7 @@ def findIndirectDependencyLevels(material : Material, dependencyPriority : [str]
         clause.addDependencyLevels(dependencyPriority[:depIndex+1])
         query.addClause(clause)
 
-        currentSet = Query.queryDependencies([material],query)
+        currentSet = queryDependencies([material],query,resolvers)
         # Find the items in the new set that arent in the previous itterations
         newItems = Utility.findAnotinB(currentSet,previousSet)
         previousSet = currentSet
