@@ -48,34 +48,35 @@ class TestRecommendations(unittest.TestCase):
         """
         Tests the function isRecommendationValid
         """
-        dependencyPriority = ["requires","recommends","enhancedBy",None]
+        dependencyPriority = ["requires","recommends","enhancedBy"]
 
-        # validSet1 = [self.Mechanics,self.Advanced_Maths,self.Basic_Maths]
-        # self.assertTrue(isRecommendationValid(validSet1,dependencyPriority))
-        # validSet2 = [self.Quantum_Physics,self.Physics,self.Further_Maths,self.Basic_Maths,self.Coding_Workshop]
-        # self.assertTrue(isRecommendationValid(validSet2,dependencyPriority))
+        validSet1 = [self.Further_Maths,self.Basic_Maths,self.Addition,self.Subtraction]
+        self.assertTrue(isRecommendationValid(validSet1,dependencyPriority,resolvers=[])) # Testing it works with a set with no OR operations
+
+
+        orSet1 = [self.Mechanics,self.Physics,self.Basic_Maths]
+        self.assertTrue(isRecommendationValid(orSet1,dependencyPriority,resolvers=[[None,"Physics"]]))
+        self.assertTrue(isRecommendationValid(orSet1,dependencyPriority,resolvers=[[None,"Maths"]]))
+
+        invalidSet1 = [self.Engineering,self.Basic_Maths,self.Further_Maths]
+        self.assertFalse(isRecommendationValid(invalidSet1,dependencyPriority,resolvers=[[None,"Physics"]]))
                         
-        # invalidSet1 = [self.Addition,self.Basic_Maths]
-        # self.assertFalse(isRecommendationValid(invalidSet1,dependencyPriority))
-        # invalidSet2 = [self.Further_Maths,self.Advanced_Maths,self.Basic_Maths,self.Quantum_Physics]
-        # self.assertFalse(isRecommendationValid(invalidSet2,dependencyPriority))
-        ...
+    
 
     def test_recommendOrder(self):
         """
         Tests the function recommendOrder
         """
-        # dependencyPriority = ["requires","recommends","enhancedBy",None]
+        dependencyPriority = ["requires","recommends","enhancedBy"]
 
-        # material1Set = [self.Addition,self.Subtraction,self.Basic_Maths,self.Advanced_Maths,self.Further_Maths,self.Quantum_Physics,self.Mechanics,self.Computer_Science,self.Coding_Workshop,self.Engineering]
-        # test1Set = recommendOrder(material1Set, dependencyPriority)
-        # self.assertTrue(isRecommendationValid(test1Set,dependencyPriority))
+        material1Set = [self.Addition,self.Subtraction,self.Basic_Maths,self.Further_Maths,self.Quantum_Physics,self.Mechanics,self.Engineering]
+        resolvers = [[None,"Physics"]]
+        test1Set = recommendOrder(material1Set, dependencyPriority,resolvers)
+        self.assertTrue(isRecommendationValid(test1Set,dependencyPriority,resolvers = resolvers))
 
 
-        # material2Set = [self.Quantum_Physics,self.Computer_Science,self.Advanced_Maths,self.Addition,self.Mechanics]
-        # test2Set = recommendOrder(material2Set,dependencyPriority)
-        # self.assertTrue(isRecommendationValid(test2Set,dependencyPriority))
-        ...
+        
+        
 
         
 
