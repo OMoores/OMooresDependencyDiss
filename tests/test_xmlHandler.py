@@ -32,7 +32,7 @@ class TestParseXmlFiles(unittest.TestCase):
         """
         
 
-        with self.assertRaises(Error):
+        with self.assertRaises(Exception):
             materials = XmlHandler.parseXmlFiles(["./tests/testAssets/empty.xml"])
 
 

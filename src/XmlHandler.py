@@ -1,5 +1,4 @@
-from os import error
-from uu import Error
+
 from src.Material import *
 from src.Debug import *
 import xml.etree.ElementTree as etree
@@ -32,24 +31,24 @@ class XmlHandler:
                 root = tree.getroot() # The Materials section of the xml file
             except:
                 Debug.printHighPriority("File ",path," is not a valid xml files")
-                raise(Error)
+                raise Exception
 
             # Check file is formatted properly
             if root.tag != "materials":
-                raise Error("File is not formatted properly")
+                raise Exception("File is not formatted properly")
 
 
             for child in root: # Each child is a material
 
                 if child.tag != "material":
-                    raise Error("File is not formatted properly")
+                    raise Exception("File is not formatted properly")
 
                 material = XmlHandler.initMaterial(child)
 
                 # Checking to see if a material with the same name exists in materialNameDict
                 if material.name in materialNameDict: 
                     Debug.printLowPriority("Material ",material.name," already exists")
-                    raise(Error)
+                    raise Exception
                 else:
                     # If a material with this name does not exist then adds material to dictionary with no issues
                     materialNameDict[material.name] = material
