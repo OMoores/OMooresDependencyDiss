@@ -1,5 +1,5 @@
-from msilib.schema import ListBox
 from tkinter import *
+from src.Recommendations import recommendOrder
 from src.GUI.EntryButton import *
 from src.GUI.ListDict import *
 from src.XmlHandler import *
@@ -33,6 +33,7 @@ class Tool:
     This class will contain methods and attributes for using the other functions in this project
     """
 
+    dependencyPriority = ["requires","recommends","enhancedBy"]
     
 
     def homepage():
@@ -71,6 +72,40 @@ class Tool:
         selectMatsWithTags.button.config(command=lambda:selectedListDict.addItems(returnMaterialWithTags(importedListDict.dict.values(),selectMatsWithTags.entry.get().split(","))))
         selectMatsWithTags.button.grid(row=0,column=2)
         selectMatsWithTags.entry.grid(row=1,column=2)
+
+        # Creating listbox to store recommended order in
+        def recOrder():
+            """
+            Finds the recommended order to learn the set of selected material and puts it in the  resultListbox
+            """
+
+            # Clear resultListbox
+            resultListbox.delete(0,END)
+
+            # Get all selected materials
+            selectedMaterials = []
+
+            for item in selectedListDict.listbox.get(0, END):
+                selectedMaterials.append(selectedListDict.dict[item])
+
+            # Find recommended order
+            recommendedOrder = recommendOrder(selectedMaterials,Tool.dependencyPriority,[])
+
+            for item in reversed(recommendedOrder): # First item in recommend order is last to be learnt
+                resultListbox.insert(END,item.name)
+
+
+        resultFrame = Frame(root)
+        resultScrollbar = Scrollbar(resultFrame, orient=VERTICAL)
+        resultListbox = Listbox(resultFrame) 
+        resultScrollbar.config(command=resultListbox.yview)
+        resultScrollbar.pack(side=RIGHT, fill=Y)
+        resultListbox.pack()
+        resultFrame.grid(row=3,column=2)
+        recommendOrderButton = Button(root, text="Recommend order to learn selected material", command=lambda:recOrder())
+        recommendOrderButton.grid(row=1,column=2)
+
+        
 
 
 
