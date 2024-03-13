@@ -149,7 +149,8 @@ def findIndirectDependencyLevels(material : Material, dependencyPriority : [str]
     Params:
     material : The material that is having its indirect dependencies examined
     dependencyPriority : A list of dependency levels in order of highest priority to lowest priority
-
+    resolvers : Used to resolve OR statements
+    
     Returns:
     A list of lists of materials, each list of material holds the materials with the level of indirect dependency with the dependency of the same index in the dependencyPriority list
     if depPriority is [A,B,C] then [[Materials in this list have an indirect dep of A],...]

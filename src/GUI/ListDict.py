@@ -12,7 +12,7 @@ class listDict:
         self.dict = {}
         
         self.label = Label(root, text = labelText)
-        self.deleteButton = Button(text=deleteText)
+        self.deleteButton = Button(text=deleteText,command=lambda:self.deleteSelectedItem())
 
         # Setting up the frame and scrollbar for listbox
         self.listboxFrame = Frame(root) # Holds the listbox and the scrollbar
@@ -38,11 +38,26 @@ class listDict:
         for key in self.dict.keys():
             self.listbox.insert(END,key)
 
-    def deleteSelectedItem(self):
+    def deleteSelectedItem(self) -> bool:
         """
-        Deletes an item from the dict and listbox
+        Deletes the material currently selected by the user
+
+        Returns:
+        A bool signifying if the item was sucessfully deleted
         """
-        ...
+
+        try:
+            # Looks through all selected items backwards and removes them from dict and listbox
+            # Has to be backward or will mess up for loop
+            for itemIndex in reversed(self.listbox.curselection()):
+                itemName = self.listbox.get(itemIndex)
+                del self.dict[itemName]
+                self.listbox.delete(itemIndex)
+            
+            return True
+
+        except:
+            return False
 
     def getSelectedItems(self):
         """
@@ -58,6 +73,7 @@ class listDict:
 
 
         return items
+    
     
     
 
@@ -101,23 +117,4 @@ class materialListDict(listDict):
         except:
             return False
         
-    def deleteSelectedItem(self) -> bool:
-        """
-        Deletes the material currently selected by the user
 
-        Returns:
-        A bool signifying if the item was sucessfully deleted
-        """
-
-        try:
-            # Looks through all selected items backwards and removes them from dict and listbox
-            # Has to be backward or will mess up for loop
-            for itemIndex in reversed(self.listbox.curselection()):
-                itemName = self.listbox.get(itemIndex)
-                del self.dict[itemName]
-                self.listbox.delete(itemIndex)
-            
-            return True
-
-        except:
-            return False

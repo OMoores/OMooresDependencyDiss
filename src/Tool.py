@@ -33,7 +33,7 @@ class Tool:
     This class will contain methods and attributes for using the other functions in this project
     """
 
-    dependencyPriority = ["requires","recommends","enhancedBy"]
+    dependencyPriority = []
     
 
     def homepage():
@@ -89,7 +89,7 @@ class Tool:
                 selectedMaterials.append(selectedListDict.dict[item])
 
             # Find recommended order
-            recommendedOrder = recommendOrder(selectedMaterials,Tool.dependencyPriority,[])
+            recommendedOrder = recommendOrder(selectedMaterials,depOrderEntry.get().split(","),list(resolversListDict.dict.values()))
 
             for item in reversed(recommendedOrder): # First item in recommend order is last to be learnt
                 resultListbox.insert(END,item.name)
@@ -103,7 +103,53 @@ class Tool:
         resultListbox.pack()
         resultFrame.grid(row=3,column=2)
         recommendOrderButton = Button(root, text="Recommend order to learn selected material", command=lambda:recOrder())
-        recommendOrderButton.grid(row=1,column=2)
+        recommendOrderButton.grid(row=2,column=2)
+
+        # Entry field for dep order
+        depOrderEntry = Entry(root)
+        depOrderLabel = Label(root, text="Priority of dependencies:")
+        depOrderLabel.grid(row=0,column=3) 
+        depOrderEntry.grid(row=1,column=3) 
+
+        def addResolverName():
+            """
+            Adds the name of a material to the resolver and refreshes listbox
+            """
+
+            unformattedName = resolversListDict.entry.get()
+
+            if resolversListDict.dict.get(unformattedName) is None:
+                resolversListDict.dict[unformattedName] = [unformattedName]
+
+            resolversListDict.refreshListbox()
+
+        def addResolverTags():
+            """
+            Adds tags to the resolver and refreshes listbox 
+            """
+
+            unformattedTags = resolversListDict.entry.get()
+            
+            if resolversListDict.dict.get(unformattedTags) is None:
+                resolversListDict.dict[unformattedTags] = [None] + [tag for tag in unformattedTags.split(",")]
+
+            resolversListDict.refreshListbox()
+
+
+
+        # listDict to hold resolvers
+        resolversListDict = listDict(root,deleteText="Delete selected resolver", labelText = "Resolvers:")
+        resolversListDict.listboxFrame.grid(row=3,column=3)
+        resolversListDict.label.grid(row=2,column=3)
+        resolversListDict.entry = Entry(root)
+        resolversListDict.entryLabel = Label(root, text="Enter name or tags for resolver:")
+        resolversListDict.addMaterialNameButton = Button(root,text="Add material name", command=lambda:addResolverName())
+        resolversListDict.addMaterialTagsButton = Button(root,text="Add material tags", command=lambda:addResolverTags())
+        resolversListDict.deleteButton.grid(row=4,column=3)
+        resolversListDict.entryLabel.grid(row=5,column=3)
+        resolversListDict.entry.grid(row=6,column=3)
+        resolversListDict.addMaterialNameButton.grid(row=7, column=3)
+        resolversListDict.addMaterialTagsButton.grid(row=8,column=3)
 
         
 
