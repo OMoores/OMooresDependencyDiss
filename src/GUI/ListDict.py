@@ -12,7 +12,7 @@ class listDict:
         self.dict = {}
         
         self.label = Label(root, text = labelText)
-        self.deleteButton = Button(text=deleteText,command=lambda:self.deleteSelectedItem())
+        self.deleteButton = Button(root,text=deleteText,command=lambda:self.deleteSelectedItem())
 
         # Setting up the frame and scrollbar for listbox
         self.listboxFrame = Frame(root) # Holds the listbox and the scrollbar
@@ -23,7 +23,24 @@ class listDict:
         self.listbox.pack()
 
 
+    def addItem(self,key,value) -> bool:
+        """
+        Adds an item to the dict
+
+        Returns:
+        A bool signifying if the item was sucessfully added, returns false if it wasnt or if it was already present
+        """
+
+        if self.dict.get(key) is None:
+            self.dict[key] = value
+            return True
         
+        return False
+
+
+
+
+
 
       
 

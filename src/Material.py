@@ -99,13 +99,20 @@ class Material:
 
     def doesHaveTag(self, checkTag : str) -> bool:
         """
-            Checks to see if a material has a tag
+            Checks to see if a material has a tag. Works with - and *
 
             Params:
             - tag : A tag
             Returns:
             A boolean representing if material has the tag in
         """
+
+        if checkTag == "*":
+            return True
+        if checkTag[0] == "-":
+            if self.doesHaveTag(checkTag[1:]):
+                return False
+            return True
 
         for tag in self.tags:
             if str(tag) == str(checkTag):

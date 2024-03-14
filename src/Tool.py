@@ -1,8 +1,12 @@
+from cProfile import label
 from tkinter import *
+
+from numpy import var
 from src.Recommendations import recommendOrder
 from src.GUI.EntryButton import *
 from src.GUI.ListDict import *
 from src.XmlHandler import *
+from src.Query import *
 from src.Material import *
 from src.Utility import *
 
@@ -22,7 +26,11 @@ def returnMaterialWithTags(materials : [Material], tags : [str]):
     returnMaterials = []
 
     for material in materials:
-        if Utility.isASubsetB(tags,material.tags):
+        haveTags = True
+        for tag in tags:
+            if not material.doesHaveTag(tag):
+                haveTags = False
+        if haveTags:
             returnMaterials.append(material)
 
     return returnMaterials
@@ -97,7 +105,7 @@ class Tool:
 
         resultFrame = Frame(root)
         resultScrollbar = Scrollbar(resultFrame, orient=VERTICAL)
-        resultListbox = Listbox(resultFrame) 
+        resultListbox = Listbox(resultFrame,yscrollcommand=resultScrollbar.set) 
         resultScrollbar.config(command=resultListbox.yview)
         resultScrollbar.pack(side=RIGHT, fill=Y)
         resultListbox.pack()
@@ -151,7 +159,105 @@ class Tool:
         resolversListDict.addMaterialNameButton.grid(row=7, column=3)
         resolversListDict.addMaterialTagsButton.grid(row=8,column=3)
 
-        
+        # ----- QUERY CONSTRUCTOR ----- #
+        def openQueryConstructor():
+            """
+            Opens the query constructor window
+            """
+
+            # Creating a new window
+            queryConstructorWindow = Toplevel(root)
+            queryConstructorWindow.title("Query Constructor")
+
+            def addQuery():
+                """
+                Adds the query constructed to the current list of queries in the main window and shuts this window
+                """
+                query = Query()
+                query.addClauses(list(clauseListDict.dict.values()))
+                queryName = clauseListDict.queryNameEntry.get()
+
+                queryListDict.addItem(queryName,query)
+                queryListDict.refreshListbox()
+
+                queryConstructorWindow.destroy() # Shuts the window
+
+            # Creating a listbox to hold each clause created
+            clauseListDict = listDict(queryConstructorWindow,deleteText="Delete clause",labelText="Clauses in current query:")
+            clauseListDict.label.grid(row=0,column=0)
+            clauseListDict.listboxFrame.grid(row=1,column=0)
+            clauseListDict.deleteButton.grid(row=2,column=0)
+            clauseListDict.useQuery = Button(queryConstructorWindow, text="Create query", command=lambda:addQuery())
+            clauseListDict.queryLabel = Label(queryConstructorWindow,text="Name of query:")
+            clauseListDict.queryNameEntry = Entry(queryConstructorWindow)
+            clauseListDict.queryLabel.grid(row=3,column=0)
+            clauseListDict.queryNameEntry.grid(row=4,column=0)
+            clauseListDict.useQuery.grid(row=5,column=0)
+            
+
+            def addVar():
+                """
+                Adds a variable to the lists of variables to be added to the current clause
+                """
+
+                varName = varListDict.varNameEntry.get()
+                var = varListDict.varEntry.get().split(",")
+
+                varListDict.addItem(varName,var)
+                varListDict.refreshListbox()
+
+
+            def addClause():
+                """
+                Adds a clause to the list of clauses to be added to the current query
+                """ 
+                clause = Clause()
+                # Creating the new clause
+                clause.addVariables(list(varListDict.dict.values()))
+                depLevels = varListDict.depLevelEntry.get().split(",")
+                clause.addDependencyLevels(depLevels)
+
+                clauseName = nameClauseEntry.get()
+
+                clauseListDict.addItem(clauseName,clause)
+                clauseListDict.refreshListbox()
+
+    
+
+            # Creating a listbox to hold each var created for a clause
+            varListDict = listDict(queryConstructorWindow, deleteText="Delete variable",labelText="Variables in new clause")
+            varListDict.varEntry = Entry(queryConstructorWindow)
+            varListDict.depLevelEntry = Entry(queryConstructorWindow)
+            varListDict.depLevelLabel = Label(queryConstructorWindow,text="Dependency levels for variable")
+            varListDict.addVarButton = Button(queryConstructorWindow, text="Add variable to clause",command=lambda:addVar())
+            varListDict.varNameLabel = Label(queryConstructorWindow,text="Name of variable:")
+            varListDict.varNameEntry = Entry(queryConstructorWindow)
+            varListDict.listboxFrame.grid(row=1,column=1)
+            varListDict.label.grid(row=0,column=1)
+            varListDict.deleteButton.grid(row=2,column=1)
+            varListDict.varEntry.grid(row=4,column=1)
+            varListDict.addVarButton.grid(row=3,column=1)
+            varListDict.depLevelLabel.grid(row=5,column=1)
+            varListDict.depLevelEntry.grid(row=6,column=1)
+            varListDict.varNameLabel.grid(row=7,column=1)
+            varListDict.varNameEntry.grid(row=8,column=1)
+
+
+            # Creating widgets to save clause and name it
+            addClauseButton = Button(queryConstructorWindow, text="Create new clause", command=lambda:addClause())       
+            addClauseButton.grid(row=2,column=2) 
+            nameClauseLabel = Label(queryConstructorWindow,text="Name of clause:")
+            nameClauseLabel.grid(row=3,column=2)
+            nameClauseEntry = Entry(queryConstructorWindow)
+            nameClauseEntry.grid(row=4,column=2)
+
+
+        queryListDict = listDict(root,"Delete selected query","Queries:")
+        queryListDict.listboxFrame.grid(row=3,column=4)
+        queryListDict.label.grid(row=2,column=4)
+        queryListDict.deleteButton.grid(row=4,column=4)
+        queryListDict.createQueryButton = Button(root,text="Open query constructor",command=lambda:openQueryConstructor())
+        queryListDict.createQueryButton.grid(row=0,column=4)
 
 
 
