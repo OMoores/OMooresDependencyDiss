@@ -33,7 +33,29 @@ class ListDict:
         # Placing the frame in root at the row and column coords provided
         self.frame.grid(column=column,row=row)
 
-    def initialiseLabel(self,text : str):
+    def addItem(self, key : str, value):
+        """
+        Adds an item to the dict and listbox, if item is already in dict then does not do anything
+        """
+
+        if self.dict.get(key) is None:
+            self.dict[key] = value
+
+        self.refreshListbox()
+
+
+
+    def refreshListbox(self):
+        """
+        Refreshes the listbox, deletes all material and readds them
+        """
+        
+        self.listbox.delete(0,END)
+
+        for key in self.dict.keys():
+            self.listbox.insert(END,key)
+
+    def initialiseTitle(self,text : str):
         """
         Creates a label at the top of the listbox
         """
@@ -47,14 +69,15 @@ class ListDict:
         Creates a button that deletes the currently selected item in the listbox
         """
 
-        def deleteSelectedItem(self):
-            try:
-                for itemIndex in reversed(self.listbox.curselection()):
-                    itemName = self.listbox.get(itemIndex)
-                    del self.dict[itemName]
-                    self.listbox.delete(itemIndex)
-            except:
-                ...
+        def deleteSelectedItem():
+
+        
+            for itemIndex in reversed(self.listbox.curselection()):
+                itemName = self.listbox.get(itemIndex)
+                del self.dict[itemName]
+                self.listbox.delete(END,itemIndex)
+                self.refreshListbox()
+            
 
         # If the delete button exists then delete it and create a new one
         self.initialiseButton("deleteButton","Delete item",deleteSelectedItem)
@@ -70,7 +93,25 @@ class ListDict:
         self.widgetDict[name] = Button(self.opFrame,text=text, command=lambda:function())
         self.widgetDict[name].pack()
 
+    def initialiseEntry(self, name : str):
+        """
+        Create an entry using the inputed name
+        """
 
+        if self.widgetDict.get(name) is not None:
+            del self.dict[name]
+        self.widgetDict[name] = Entry(self.opFrame)
+        self.widgetDict[name].pack()
+
+    def initialiseLabel(self, name : str, text : str):
+        """
+        Creates a label using the inputed name and text
+        """
+
+        if self.widgetDict.get(name) is not None:
+            del self.dict[name]
+        self.widgetDict[name] = Label(self.opFrame, text=text)
+        self.widgetDict[name].pack()
 
         
 
