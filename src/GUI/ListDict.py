@@ -1,137 +1,77 @@
 from tkinter import *
-from src.Material import Material
 
-class listDict:
+class ListDict:
     """
     This class is to be used when there is a listbox and a dict that should contain the same items
     
-    Can have a button to delete materials
+    The class contains method for managing the contents of the listbox and the dict as well as an inbuilt scrollbar
     """
 
-    def __init__(self, root, deleteText : str = None, labelText = None):
+    def __init__(self, root, column : int, row : int):
+
+        # This dict will hold items to be displayed in the listbox
         self.dict = {}
-        
-        self.label = Label(root, text = labelText)
-        self.deleteButton = Button(root,text=deleteText,command=lambda:self.deleteSelectedItem())
+        # This dict will hold any widgets added to this ListDict
+        self.widgetDict = {}
+        # This frame will hold all widgets relating to this listdict
+        # The listbox is at 0,1 in the grid of this frame
+        self.frame = Frame(root) 
 
-        # Setting up the frame and scrollbar for listbox
-        self.listboxFrame = Frame(root) # Holds the listbox and the scrollbar
-        scrollbar = Scrollbar(self.listboxFrame, orient=VERTICAL)
-        self.listbox = Listbox(self.listboxFrame, yscrollcommand=scrollbar.set)
-        scrollbar.config(command=self.listbox.yview)
-        scrollbar.pack(side=RIGHT,fill=Y)
+        # Creating the listbox with a scrollbar
+        listboxFrame = Frame(self.frame)
+        listboxScrollbar = Scrollbar(listboxFrame, orient=VERTICAL)
+        self.listbox = Listbox(listboxFrame, yscrollcommand=listboxScrollbar.set)
+        listboxScrollbar.config(command=self.listbox.yview)
+        listboxScrollbar.pack(side=RIGHT,fill=Y)
         self.listbox.pack()
+        listboxFrame.grid(column=0,row=1)
 
+        # Creating a frame to hold buttons labels and other widgets (operation frame -> For holding things to perform operations)
+        self.opFrame = Frame(self.frame)
+        self.opFrame.grid(column=1,row=1)
 
-    def addItem(self,key,value) -> bool:
+        # Placing the frame in root at the row and column coords provided
+        self.frame.grid(column=column,row=row)
+
+    def initialiseLabel(self,text : str):
         """
-        Adds an item to the dict
-
-        Returns:
-        A bool signifying if the item was sucessfully added, returns false if it wasnt or if it was already present
+        Creates a label at the top of the listbox
         """
+        self.widgetDict["topLabel"] = Label(self.frame, text = text)
+        self.widgetDict["topLabel"].grid(column=0,row=0)
 
-        if self.dict.get(key) is None:
-            self.dict[key] = value
-            return True
         
-        return False
 
-
-
-
-
-
-      
-
-
-    def refreshListbox(self):
+    def initialiseDeleteButton(self):
         """
-        Refreshes the listbox, deletes all material and readds them
-        """
-        
-        self.listbox.delete(0,END)
-
-        for key in self.dict.keys():
-            self.listbox.insert(END,key)
-
-    def deleteSelectedItem(self) -> bool:
-        """
-        Deletes the material currently selected by the user
-
-        Returns:
-        A bool signifying if the item was sucessfully deleted
+        Creates a button that deletes the currently selected item in the listbox
         """
 
-        try:
-            # Looks through all selected items backwards and removes them from dict and listbox
-            # Has to be backward or will mess up for loop
-            for itemIndex in reversed(self.listbox.curselection()):
-                itemName = self.listbox.get(itemIndex)
-                del self.dict[itemName]
-                self.listbox.delete(itemIndex)
-            
-            return True
+        def deleteSelectedItem(self):
+            try:
+                for itemIndex in reversed(self.listbox.curselection()):
+                    itemName = self.listbox.get(itemIndex)
+                    del self.dict[itemName]
+                    self.listbox.delete(itemIndex)
+            except:
+                ...
 
-        except:
-            return False
+        # If the delete button exists then delete it and create a new one
+        self.initialiseButton("deleteButton","Delete item",deleteSelectedItem)
 
-    def getSelectedItems(self):
+    def initialiseButton(self, name : str, text : str, function):
         """
-        Returns the item the user is currently selecting
+        Creates a button using the inputted function and name
+        If a button with this name already exists deletes it and creates this new button
         """
 
-        selected = self.listbox.curselection()
-        items = []
+        if self.widgetDict.get(name) is not None:
+            del self.dict[name]
+        self.widgetDict[name] = Button(self.opFrame,text=text, command=lambda:function())
+        self.widgetDict[name].pack()
 
-        for index in selected:
-            items.append(self.dict[self.listbox.get(index)])
-
-
-
-        return items
-    
-    
-    
 
 
         
 
     
-        
-class materialListDict(listDict):
-    """
-    A listDict specifically made to hold materials.
-    After items are added refreshes the listbox so items will be displayed
-    """
-
-    def addItems(self,materials : [Material]):
-
-        for material in materials:
-            if not self.addItem(material):
-                Exception()
-
-        self.refreshListbox()
-
-
-    def addItem(self,material : Material) -> bool:
-        """
-        Adds a material, the name is added to the end of the listbox and the name is used as a key for the dict where the material is the value
-        If the item is already present in the dict nothing happens
-
-        Param:
-        - material : The material to be added
-
-        Returns:
-        A bool signifying if the item was sucessfully added, returns false if it wasnt or if it was already present
-        """
-
-        try:
-            if self.dict.get(material.name) is None:
-                self.dict[material.name] = material
-
-            return True
-        except:
-            return False
-        
-
