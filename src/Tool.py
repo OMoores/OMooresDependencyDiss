@@ -113,6 +113,34 @@ class Tool:
         recommendOrderButton = Button(root, text="Recommend order to learn selected material", command=lambda:recOrder())
         recommendOrderButton.grid(row=2,column=2)
 
+        def queryMats():
+            """
+            Querys currently selected materials and puts them in the output box
+            """
+
+            resultListbox.delete(0,END)
+
+            selectedMaterials = []
+
+            for item in selectedListDict.listbox.get(0, END):
+                selectedMaterials.append(selectedListDict.dict[item])
+
+            # for queryIndex in reversed(queryListDict.listbox.curselection()):
+            #     print(queryIndex)
+
+            queryIndex = queryListDict.listbox.curselection()[0]
+            getName = queryListDict.listbox.get(queryIndex)
+            
+            query = queryListDict.dict[getName]
+
+            queriedMaterials = queryDependencies(selectedMaterials,query,list(resolversListDict.dict.values()))
+
+            for item in queriedMaterials:
+                resultListbox.insert(END,item.name)
+
+        queryMaterialsButton = Button(root,text="Query selected materials",command=lambda:queryMats())
+        queryMaterialsButton.grid(row=4,column=2)
+
         # Entry field for dep order
         depOrderEntry = Entry(root)
         depOrderLabel = Label(root, text="Priority of dependencies:")
@@ -258,6 +286,7 @@ class Tool:
         queryListDict.deleteButton.grid(row=4,column=4)
         queryListDict.createQueryButton = Button(root,text="Open query constructor",command=lambda:openQueryConstructor())
         queryListDict.createQueryButton.grid(row=0,column=4)
+
 
 
 
