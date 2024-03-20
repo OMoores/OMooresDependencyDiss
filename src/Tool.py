@@ -4,8 +4,8 @@ from tkinter import *
 from src.GUI.ListDict import ListDict
 from src.Query import *
 
-class Tool:
-    def homepage():
+class Homepage:
+    def __init__(self):
         root = Tk()
 
         def importMaterials():
@@ -35,7 +35,9 @@ class Tool:
 
         def openQueryPage():
 
-            Tool.queryPage(root,materialList.dict)
+            queryPage = QueryPage(root,materialList.dict,selectedMaterials)
+
+            
 
             
 
@@ -59,10 +61,13 @@ class Tool:
         root.mainloop()
 
 
-    def queryPage(root, materialDict):
+class QueryPage:
+    def __init__(self, root, materialDict,selectedMaterials):
         """
         Opens a window that allows the construction and execution of a query
         """
+
+        root = root
 
         def selectItemFromMatList():
             """
@@ -177,19 +182,33 @@ class Tool:
         resolversList.initialiseButton("addTags","Add tags",addResolverTags)
         resolversList.initialiseDeleteButton()
 
+        def returnQueriedMaterials(returnMaterials):
+
+            if returnMaterials[0] == 0:
+                # Adding new materials
+                for mat in returnMaterials[1:]:
+                    selectedMaterials.addItem(mat.name,mat)
+            elif returnMaterials[0] == 1:
+                
+                # Deleting materials
+                for mat in returnMaterials[1:]:
+                    del selectedMaterials.dict[mat.name]
+
+            selectedMaterials.refreshListbox()
+
         def selectNewMaterials():
             """
             Returns all materials in the queryResultList to be selected
             """
 
-            return [0] + list(queryResultList.dict.values()) # item 0 being 0 means the materials will be added
+            returnQueriedMaterials([0] + list(queryResultList.dict.values())) # item 0 being 0 means the materials will be added
         
         def deleteNewMaterials():
             """
             Returns all materials in the queryResultList to be deleted
             """
 
-            return [1] + list(queryResultList.dict.values()) # item 0 being 1 means the materials will be deleted
+            returnQueriedMaterials([1] + list(queryResultList.dict.values())) # item 0 being 1 means the materials will be deleted
 
         def selectToQuery():
             """
@@ -221,4 +240,4 @@ class Tool:
 
 
 
-    
+
