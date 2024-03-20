@@ -31,7 +31,7 @@ class ListDict:
         self.opFrame.grid(column=1,row=1)
 
         # Placing the frame in root at the row and column coords provided
-        self.frame.grid(column=column,row=row)
+        self.frame.grid(column=column,row=row,sticky="W")
 
     def addItem(self, key : str, value):
         """
@@ -41,6 +41,10 @@ class ListDict:
         if self.dict.get(key) is None:
             self.dict[key] = value
 
+        self.refreshListbox()
+
+    def clear(self):
+        self.dict = {}
         self.refreshListbox()
 
 
