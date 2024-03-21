@@ -247,7 +247,9 @@ def extractOperation(operation, dependencyLevel, resolvers : [[str]] = []) -> [[
 
 
         if operation1Materials == None and operation2Materials == None:
-            raise Exception("Could not resolve an OR with operations:\n", operation[1], "\n",operation[2],"\n With resolvers: ",resolvers)
+            # Returning both materials as if the OR was an AND
+            print("Could not resolver operation: ", operation, " with resolvers: ", resolvers)
+            return extractOperation(operation[1],dependencyLevel, resolvers) + extractOperation(operation[2],dependencyLevel,resolvers) # If cannot resolve then returns both materials
         elif operation1Materials == None:
             return operation2Materials[1] # Item 0 return from resolve operations is the resolution level
         elif operation2Materials == None:

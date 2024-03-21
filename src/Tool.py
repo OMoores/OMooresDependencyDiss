@@ -76,7 +76,7 @@ class Homepage:
 
             self.selectedMaterials.dict = {}
 
-            for material in reversed(recommendedOrder):
+            for material in recommendedOrder:
                 self.selectedMaterials.addItem(material.name,material)
             self.selectedMaterials.refreshListbox()
 
@@ -124,7 +124,7 @@ class QueryPage:
 
         root = homepage.root
         masterMaterialList = homepage.materialList
-        masterDepLevelList = homepage.depLevelList
+        masterDepLevelList = homepage.depPriorityDict
         masterSelectedMaterials = homepage.selectedMaterials
 
         def selectItemFromMatList():
