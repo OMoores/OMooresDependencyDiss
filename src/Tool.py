@@ -1,73 +1,131 @@
-from winreg import QueryReflectionKey
+from django.urls import Resolver404
 from src.XmlHandler import XmlHandler
 from tkinter import *
 from src.GUI.ListDict import ListDict
 from src.Query import *
+from src.Recommendations import *
+
+
+def returnMaterialWithTags(materials : [Material], tags : [str]):
+    """
+    Returns any material provided that has all of the tags given
+
+    Params:
+    - materials : A list of materials
+    - tags : A list of strings 
+
+    Returns:
+    A list of materials with all of the tags provided
+    """
+
+    returnMaterials = []
+
+    for material in materials:
+        haveTags = True
+        for tag in tags:
+            if not material.doesHaveTag(tag):
+                haveTags = False
+        if haveTags:
+            returnMaterials.append(material)
+
+    return returnMaterials
 
 class Homepage:
     def __init__(self):
-        root = Tk()
+        self.root = Tk()
+
+        # Hold dep priority and resolvers of current program
+        self.depPriorityDict = {}
+        self.resolversDict ={}
 
         def importMaterials():
             """
             This function will import materials to materialList
             """
 
-            path = materialList.widgetDict["pathEntry"].get()
+            path = self.materialList.widgetDict["pathEntry"].get()
 
             materials = XmlHandler.parseXmlFiles([path])
 
             for material in materials:
-                if materialList.dict.get(material.name) is None:
-                    materialList.dict[material.name] = material
+                if self.materialList.dict.get(material.name) is None:
+                    self.materialList.dict[material.name] = material
             
-            materialList.refreshListbox()
+            self.materialList.refreshListbox()
 
         def selectItemFromMatList():
             """
             Takes selected item from materialList and adds it to selectedMaterials
             """
 
-            for itemIndex in materialList.listbox.curselection():
-                itemName = materialList.listbox.get(itemIndex)
-                itemValue = materialList.dict[itemName]
-                selectedMaterials.addItem(itemName,itemValue)
+            for itemIndex in self.materialList.listbox.curselection():
+                itemName = self.materialList.listbox.get(itemIndex)
+                itemValue = self.materialList.dict[itemName]
+                self.selectedMaterials.addItem(itemName,itemValue)
 
         def openQueryPage():
 
-            queryPage = QueryPage(root,materialList.dict,selectedMaterials)
+            queryPage = QueryPage(self)
 
+        def openSettings():
+            settingsPage = SettingsPage(self)
+
+        def getRecommendOrder():
+            
+            recommendedOrder = recommendOrder(list(self.selectedMaterials.dict.values()),list(self.depPriorityDict.values()),list(self.resolversDict.values()))
+
+            self.selectedMaterials.dict = {}
+
+            for material in reversed(recommendedOrder):
+                self.selectedMaterials.addItem(material.name,material)
+            self.selectedMaterials.refreshListbox()
+
+        def getMaterialsWithTags():
+
+            tags = self.materialList.widgetDict["selectTagsEntry"].get().split(",")
+            materials = returnMaterialWithTags(self.materialList.dict.values(),tags)
+            
+            for material in materials:
+                self.selectedMaterials.addItem(material.name,material)
             
 
-            
+
+        self.materialList = ListDict(self.root,0,1)
+        self.materialList.initialiseTitle("Material List")
+        self.materialList.initialiseLabel("pathWidget","Material file path:")
+        self.materialList.initialiseEntry("pathEntry")
+        self.materialList.initialiseButton("importMaterials","Import materials",importMaterials)
+        self.materialList.initialiseButton("selectMaterials","Select material",selectItemFromMatList)
+        self.materialList.initialiseLabel("selectTagsLabel","Select materials with tags:")
+        self.materialList.initialiseEntry("selectTagsEntry")
+        self.materialList.initialiseButton("selectTagsButton","Select materials with tags",getMaterialsWithTags)
+        self.materialList.initialiseDeleteButton()
 
 
-        materialList = ListDict(root,0,0)
-        materialList.initialiseTitle("Material List")
-        materialList.initialiseLabel("pathWidget","Material file path:")
-        materialList.initialiseEntry("pathEntry")
-        materialList.initialiseButton("importMaterials","Import materials",importMaterials)
-        materialList.initialiseButton("selectMaterials","Select material",selectItemFromMatList)
-        materialList.initialiseDeleteButton()
+        self.selectedMaterials = ListDict(self.root,1,1)
+        self.selectedMaterials.initialiseTitle("Selected Materials")
+        self.selectedMaterials.initialiseButton("queryButton","Query materials",openQueryPage)
+        self.selectedMaterials.initialiseButton("recommendOrderButton","Recommend order",getRecommendOrder)
+        self.selectedMaterials.initialiseDeleteButton()
 
+        settingsButton = Button(self.root, text = "Settings",command=lambda:openSettings())
+        settingsButton.grid(column=0,row=0)
 
-        selectedMaterials = ListDict(root,1,0)
-        selectedMaterials.initialiseTitle("Selected Materials")
-        selectedMaterials.initialiseButton("queryButton","Query materials",openQueryPage)
-        selectedMaterials.initialiseButton("recommendOrderButton","Recommend order",())
-        selectedMaterials.initialiseDeleteButton()
         
 
-        root.mainloop()
+        self.root.mainloop()
 
 
 class QueryPage:
-    def __init__(self, root, materialDict,selectedMaterials):
+    def __init__(self, homepage : Homepage):
         """
         Opens a window that allows the construction and execution of a query
         """
 
-        root = root
+        root = homepage.root
+        masterMaterialList = homepage.materialList
+        masterDepLevelList = homepage.depLevelList
+        masterSelectedMaterials = homepage.selectedMaterials
 
         def selectItemFromMatList():
             """
@@ -79,10 +137,7 @@ class QueryPage:
                 itemValue = materialList.dict[itemName]
                 toQueryList.addItem(itemName,itemValue)
 
-        def addDepLevelToClause():
-            depLevel = depLevelList.widgetDict["depLevelEntry"].get()
-            depLevelList.addItem(depLevel,depLevel)
-            depLevelList.refreshListbox()
+        
 
         def addVarToClause():
             varName = varList.widgetDict["varName"].get()
@@ -106,6 +161,8 @@ class QueryPage:
             varList.clear()
 
         def queryMaterials():
+
+            queryResultList.clear()
             
             materials = list(toQueryList.dict.values())
 
@@ -135,6 +192,11 @@ class QueryPage:
             resolversList.addItem("Tags: "+resolverEntry,[resolvers])
             resolversList.refreshListbox()
 
+        def addDepLevelToClause():
+            depLevel = depLevelList.widgetDict["depLevelEntry"].get()
+            depLevelList.addItem(depLevel,depLevel)
+            depLevelList.refreshListbox()
+
 
         queryWindow = Toplevel(root)
         queryWindow.title("Query Material")
@@ -144,7 +206,7 @@ class QueryPage:
         materialList = ListDict(queryWindow,0,0)
         materialList.initialiseTitle("Material List")
         materialList.initialiseButton("selectButton","Select material",selectItemFromMatList)
-        materialList.dict = materialDict
+        materialList.dict = homepage.materialList.dict
         materialList.refreshListbox()
 
         toQueryList = ListDict(queryWindow,1,0)
@@ -168,12 +230,6 @@ class QueryPage:
         varList.initialiseButton("addVar","Add variable",addVarToClause)
         varList.initialiseDeleteButton()
 
-        depLevelList = ListDict(queryWindow,2,2)
-        depLevelList.initialiseTitle("Dependency Levels of Clause")
-        depLevelList.initialiseLabel("entryLabel","Enter dependency level:")
-        depLevelList.initialiseEntry("depLevelEntry")
-        depLevelList.initialiseButton("addDepLevel","Add dependency level",addDepLevelToClause)
-        depLevelList.initialiseDeleteButton()
 
         resolversList = ListDict(queryWindow,2,0)
         resolversList.initialiseTitle("Resolvers")
@@ -187,14 +243,14 @@ class QueryPage:
             if returnMaterials[0] == 0:
                 # Adding new materials
                 for mat in returnMaterials[1:]:
-                    selectedMaterials.addItem(mat.name,mat)
+                    masterSelectedMaterials.addItem(mat.name,mat)
             elif returnMaterials[0] == 1:
                 
                 # Deleting materials
                 for mat in returnMaterials[1:]:
-                    del selectedMaterials.dict[mat.name]
+                    del masterSelectedMaterials.dict[mat.name]
 
-            selectedMaterials.refreshListbox()
+            masterSelectedMaterials.refreshListbox()
 
         def selectNewMaterials():
             """
@@ -220,7 +276,6 @@ class QueryPage:
             for mat in matList:
                 toQueryList.addItem(mat.name,mat)
 
-            matList.refreshListbox()
 
 
         queryResultList = ListDict(queryWindow,3,0)
@@ -230,14 +285,85 @@ class QueryPage:
         queryResultList.initialiseButton("querySelectMatsButton","Add to query materials", selectToQuery)
         queryResultList.initialiseDeleteButton()
 
+        def copyDepLevelsFromMaster():
+            depLevelList.dict = masterDepLevelList.dict.copy()
+            depLevelList.refreshListbox()
+
+        depLevelList = ListDict(queryWindow,2,2)
+        copyDepLevelsFromMaster() # Making sure it starts with all the dep levels from the master class
+        depLevelList.initialiseTitle("Dependency Levels of Query")
+        depLevelList.initialiseLabel("entryLabel","Enter dependency level:")
+        depLevelList.initialiseEntry("depLevelEntry")
+        depLevelList.initialiseButton("addDepLevel","Add dependency level",addDepLevelToClause)
+        depLevelList.initialiseDeleteButton()
+
         # Query constructor Label
         queryConstructorLabel = Label(queryWindow,text="Query Constructor:")
         queryConstructorLabel.grid(column=1,row=1)
         
 
+class SettingsPage():
 
+    def __init__(self,homepage : Homepage):
+        root = homepage.root
 
+        recommendWindow = Toplevel(root)
+        recommendWindow.title("Settings")
 
+        def addDependencyLevel():
+            depList.addItem(depList.widgetDict["depEntry"].get(),depList.widgetDict["depEntry"].get())
+            homepage.depPriorityDict = depList.dict.copy()
 
+        def removeDependencyLevel():
+            for itemIndex in reversed(depList.listbox.curselection()):
+                itemName = depList.listbox.get(itemIndex)
+                del depList.dict[itemName]
+                depList.listbox.delete(END,itemIndex)
+                depList.refreshListbox()
+            homepage.depPriorityDict = depList.dict.copy()
+            
 
+        def addResolverName():
+
+            resolverEntry = resolversList.widgetDict["resolver"].get()
+            resolversList.addItem("Name: "+resolverEntry,resolverEntry)
+            resolversList.refreshListbox()
+            homepage.resolversDict = resolversList.dict.copy()
+        
+        def addResolverTags():
+            
+            resolverEntry = resolversList.widgetDict["resolver"].get()
+            resolvers = resolverEntry.split(",")
+            resolvers = [None]+resolvers
+            resolversList.addItem("Tags: "+resolverEntry,resolvers)
+            resolversList.refreshListbox()
+            homepage.resolversDict = resolversList.dict.copy()
+
+        def removeResolver():
+            for itemIndex in reversed(resolversList.listbox.curselection()):
+                itemName = resolversList.listbox.get(itemIndex)
+                del resolversList.dict[itemName]
+                resolversList.listbox.delete(END,itemIndex)
+                resolversList.refreshListbox()
+            homepage.resolversDict = depList.dict.copy() 
+         
+
+        # Creating a list for dependency priority
+        depList = ListDict(recommendWindow,0,1)
+        depList.dict = homepage.depPriorityDict.copy() # Copying dependency priority from homepage 
+        depList.refreshListbox()
+        depList.initialiseTitle("Dependency Priority:")
+        depList.initialiseEntry("depEntry")
+        depList.initialiseButton("depEntryButton","Add dependency",addDependencyLevel)
+        depList.initialiseButton("depDeleteButton","Delete dependency",removeDependencyLevel)
+
+        # Creating a list for resolvers
+        resolversList = ListDict(recommendWindow,1,1)
+        resolversList.dict = homepage.resolversDict.copy()
+        resolversList.refreshListbox()
+        resolversList.initialiseTitle("Resolvers")
+        resolversList.initialiseEntry("resolver")
+        resolversList.initialiseButton("addName","Add name",addResolverName)
+        resolversList.initialiseButton("addTags","Add tags",addResolverTags)
+        resolversList.initialiseButton("deleteButton","Delete resolver",removeResolver)
 
