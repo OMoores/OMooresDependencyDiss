@@ -83,4 +83,47 @@ class Utility:
                 unique.append(item)
         
         return unique
+    
+    def turnMatDepIntoText(dependency  : []) -> str:
+        """
+        Takes a dependency from a material in the form [[opcode, operation, operation],level] and returns the dependency in text form
+
+        Params:
+        - dependency : A list representing a dependency
+
+        Returns:
+        A string representing the dependency in a human readable form
+        """
+
+        returnString = dependency[1] + ": " + Utility.turnOperationIntoText(dependency[0])
+
+        return returnString
+    
+    def turnOperationIntoText(operation : []) -> str:
+        """
+        Takes an operation from a dependency in the form [opcode, operation, operation] and returns the operation in text form
+
+        Params:
+        - operation : A list representing an operation
+
+        Returns:
+        A string representing the operation in a human readable form
+        """
+        
+        if operation[0] == None:
+            return operation[1].name
+        elif operation[0] == "AND":
+            return Utility.turnOperationIntoText(operation[1]) + " AND " + Utility.turnOperationIntoText(operation[2])
+        elif operation[0] == "OR":
+            return Utility.turnOperationIntoText(operation[1]) + " OR " + Utility.turnOperationIntoText(operation[2])
+
+    def findOrDependencies():
+        """
+        Takes a list of materials and returns a list of all dependencies that have an OR in them
+        """
+
+    
+    def findOrDependency():
+        ...
+
 

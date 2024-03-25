@@ -1,3 +1,4 @@
+from xmlrpc.client import boolean
 from django.urls import Resolver404
 from src.XmlHandler import XmlHandler
 from tkinter import *
@@ -87,6 +88,11 @@ class Homepage:
             
             for material in materials:
                 self.selectedMaterials.addItem(material.name,material)
+
+        def clearQueriedMaterials():
+
+            self.selectedMaterials.clear()
+
             
 
 
@@ -106,10 +112,63 @@ class Homepage:
         self.selectedMaterials.initialiseTitle("Selected Materials")
         self.selectedMaterials.initialiseButton("queryButton","Query materials",openQueryPage)
         self.selectedMaterials.initialiseButton("recommendOrderButton","Recommend order",getRecommendOrder)
+        self.selectedMaterials.initialiseButton("clear","Clear selected materials",clearQueriedMaterials)
         self.selectedMaterials.initialiseDeleteButton()
 
-        settingsButton = Button(self.root, text = "Settings",command=lambda:openSettings())
-        settingsButton.grid(column=0,row=0)
+        def selectedMaterialDependencies():
+            """
+            Takes the currently selected material in the selectedMaterials listDict and makes depListDict show the materials dependencies
+            """
+            
+            # Clear previous content of listdict
+            depListDict.clear()
+
+            # Find selected material
+            selectedMaterialIndex = self.selectedMaterials.listbox.curselection()[0]
+            selectedMaterialName = self.selectedMaterials.listbox.get(selectedMaterialIndex)
+            selectedMaterial = self.selectedMaterials.dict[selectedMaterialName]
+
+            # Display dependencies
+            dependencies = selectedMaterial.dependencies
+
+            for dependency in dependencies:
+                # Display each dependency
+                depListDict.dict[Utility.turnMatDepIntoText(dependency)] = dependency
+
+            depListDict.refreshListbox()
+
+        def showOrDependencies():
+            """
+            Displays the OR dependencies of all selected mateirals in depListDict
+            """
+            
+            depListDict.clear()
+
+            # Gets all selected materials
+            selectedMaterials = list(self.selectedMaterials.dict.values())
+
+            # Getting each materials dependencies that have ORs in them
+            for orMaterial in selectedMaterials:
+                orDependencies = findOrDependencies(orMaterial)
+
+
+                # Writing each dependency to depListDict
+                for orStr in orDependencies:
+                    depListDict.addItem(orStr, orMaterial)
+                    
+
+
+        
+        # A list that displays a materials dependencies
+        depListDict = ListDict(self.root,3,1)
+        depListDict.initialiseTitle("Material dependencies")
+        depListDict.initialiseButton("showDepSelectedMat","Selected material",selectedMaterialDependencies)
+        depListDict.initialiseButton("showOrDeps","OR dependencies",showOrDependencies)
+
+        optionsFrame = Frame(self.root)
+        settingsButton = Button(optionsFrame, text = "Settings",command=lambda:openSettings())
+        settingsButton.grid(row=0, column=0)
+        optionsFrame.grid(column=0,row=0)
 
         
 
@@ -286,7 +345,7 @@ class QueryPage:
         queryResultList.initialiseDeleteButton()
 
         def copyDepLevelsFromMaster():
-            depLevelList.dict = masterDepLevelList.dict.copy()
+            depLevelList.dict = masterDepLevelList.copy()
             depLevelList.refreshListbox()
 
         depLevelList = ListDict(queryWindow,2,2)
@@ -296,6 +355,8 @@ class QueryPage:
         depLevelList.initialiseEntry("depLevelEntry")
         depLevelList.initialiseButton("addDepLevel","Add dependency level",addDepLevelToClause)
         depLevelList.initialiseDeleteButton()
+
+
 
         # Query constructor Label
         queryConstructorLabel = Label(queryWindow,text="Query Constructor:")
@@ -367,3 +428,186 @@ class SettingsPage():
         resolversList.initialiseButton("addTags","Add tags",addResolverTags)
         resolversList.initialiseButton("deleteButton","Delete resolver",removeResolver)
 
+class MaterialConstructor:
+    
+    def __init__(self, homepage : Homepage): 
+
+        selectedMaterial = None
+
+        def createMaterial():
+            """
+            Creates an empty material
+            """
+
+            materialName = newMaterialList.widgetDict["materialNameEntry"].get()
+
+            newMaterialList.addItem(materialName,Material(materialName))
+
+        def selectMaterial():
+            """
+            Gets the current material selected and puts its dependencies and tags in the dep and tag list,
+            Whenever tags and deps are added they are added to the most recently selected material
+            """
+            # If cannot select a material selectedMaterial is set to None
+            try:
+                # Selecting the material
+                selectedMaterialIndex = newMaterialList.listbox.curselection()[0]
+                selectedMaterialName = newMaterialList.listbox.get(selectedMaterialIndex)
+                selectedMaterial = newMaterialList.dict[selectedMaterialName]
+
+                displayMaterial(selectedMaterial)
+                
+            except:
+                selectedMaterial = None
+
+        def displayMaterial(selectedMaterial : Material):
+            """
+            Takes a material and displays the materials deps and tags
+            """
+
+            # Making tags and deps the tags and deps of this material
+            dependencies = selectedMaterial.dependencies
+            tags = selectedMaterial.tags
+
+            # Clear dep and tags list
+            materialDepsList.dict = {}
+            materialTagsList.dict = {}
+
+            # Setting dependency list
+            for dependency in dependencies:
+                materialDepsList.addItem(dependency.name,dependency)
+
+            for tag in tags:
+                materialTagsList.addItem(tag,tag)
+            
+            materialDepsList.refreshListbox()
+            materialTagsList.refreshListbox()
+
+            depString = str("Dependencies of " + selectedMaterial.name)
+            materialDepsList.widgetDict["topLabel"].config(text=depString)
+
+            tagString = str("Tags of " + selectedMaterial.name)
+            materialTagsList.widgetDict["topLabel"].config(text=depString)
+
+        def deleteMaterial():
+
+            for itemIndex in reversed(newMaterialList.listbox.curselection()):
+                itemName = newMaterialList.listbox.get(itemIndex)
+                del newMaterialList.dict[itemName]
+                newMaterialList.listbox.delete(END,itemIndex)
+                newMaterialList.refreshListbox()
+
+            materialDepsList.clear()
+            materialTagsList.clear()
+
+            
+            
+
+            
+
+
+
+        materialConstructorWindow = Toplevel(homepage.root)        
+        materialConstructorWindow.title("Material constructor")
+
+        topFrame = Frame(materialConstructorWindow)
+        addMaterialButton = Button(topFrame,text="Add materials",command=()) 
+        filenameEntry = Entry(topFrame)
+        fileCreateButton = Button(topFrame,text="Create file:",command=())   
+        addMaterialButton.grid(column=0,row=0)
+        fileCreateButton.grid(column=1,row=0)
+        filenameEntry.grid(column=2,row=0)
+        topFrame.grid(column=0,row=0)
+
+        newMaterialList = ListDict(materialConstructorWindow,0,1)
+        newMaterialList.initialiseTitle("Materials")
+        newMaterialList.initialiseLabel("materialNameLabel","Material name")
+        newMaterialList.initialiseEntry("materialNameEntry")
+        newMaterialList.initialiseButton("createMaterialButton","Create material",createMaterial)
+        newMaterialList.initialiseButton("selectMaterialButton","Select material",selectMaterial)
+        newMaterialList.initialiseButton("deleteMaterialButton","Delete material",deleteMaterial)
+
+        materialDepsList = ListDict(materialConstructorWindow,1,1)
+        materialDepsList.initialiseTitle("Dependencies of selected material")
+        materialDepsList.initialiseButton("depCreatorButton","createDependency",())
+        materialDepsList.initialiseDeleteButton()
+
+        materialTagsList = ListDict(materialConstructorWindow,2,1)
+        materialTagsList.initialiseTitle("Tags of selected material")
+        materialTagsList.initialiseLabel("tagEntryLabel","Tag")
+        materialTagsList.initialiseEntry("tagEntry")
+        materialTagsList.initialiseButton("addTagButton","Add tag",())
+        materialTagsList.initialiseDeleteButton()
+
+def turnMatDepIntoText(dependency  : []) -> str:
+    """
+    Takes a dependency from a material in the form [[opcode, operation, operation],level] and returns the dependency in text form
+
+    Params:
+    - dependency : A list representing a dependency
+
+    Returns:
+    A string representing the dependency in a human readable form
+    """
+
+    returnString = dependency[1] + ": " + turnOperationIntoText(dependency[0])
+
+    return returnString
+
+def turnOperationIntoText(operation : []) -> str:
+    """
+    Takes an operation from a dependency in the form [opcode, operation, operation] and returns the operation in text form
+
+    Params:
+    - operation : A list representing an operation
+
+    Returns:
+    A string representing the operation in a human readable form
+    """
+    
+    if operation[0] == None:
+        return operation[1].name
+    elif operation[0] == "AND":
+        return turnOperationIntoText(operation[1]) + " AND " + turnOperationIntoText(operation[2])
+    elif operation[0] == "OR":
+        return turnOperationIntoText(operation[1]) + " OR " + turnOperationIntoText(operation[2])
+
+def findOrDependencies(material : Material) -> [str]:
+    """
+    Takes a material and returns a list of its dependencies that have OR in them
+    
+    Params:
+    - material : A material
+
+    Returns:
+    A list of strings representing dependencies with ORs in in human readable form 
+    """
+    
+    returnList = []
+
+    for dependency in material.dependencies:
+        if doesHaveOrDependency(dependency):
+            returnList.append(turnMatDepIntoText(dependency))
+
+    return returnList
+
+
+def doesHaveOrDependency(dependency) -> bool:
+    """
+    Takes a dependency and returns if the dependency contains an OR
+    """
+
+    operation = dependency[0]
+    while operation[0] != None:
+        if operation[0] == "OR":
+            return True
+        if operation[0] == "AND":
+            if doesHaveOrDependency([operation[1]]) or doesHaveOrDependency([operation[2]]):
+                return True
+            return False
+
+        operation = operation[0]
+    
+    return False
+        
+        
