@@ -154,6 +154,8 @@ class Homepage:
 
                 # Writing each dependency to depListDict
                 for orStr in orDependencies:
+
+                    orStr = orMaterial.name + " " + orStr
                     depListDict.addItem(orStr, orMaterial)
                     
 
