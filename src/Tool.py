@@ -1,3 +1,4 @@
+from select import select
 from xmlrpc.client import boolean
 from django.urls import Resolver404
 from src.XmlHandler import XmlHandler
@@ -135,6 +136,12 @@ class Homepage:
                 # Display each dependency
                 depListDict.dict[Utility.turnMatDepIntoText(dependency)] = dependency
 
+            # Setting title
+            title = selectedMaterial.name + " dependencies"
+
+            depListDict.widgetDict["topLabel"].config(text=title)
+
+
             depListDict.refreshListbox()
 
         def showOrDependencies():
@@ -157,15 +164,42 @@ class Homepage:
 
                     orStr = orMaterial.name + " " + orStr
                     depListDict.addItem(orStr, orMaterial)
+        
+            # Setting title
+            depListDict.widgetDict["topLabel"].config(text="All OR dependencies")
                     
-
-
         
         # A list that displays a materials dependencies
         depListDict = ListDict(self.root,3,1)
         depListDict.initialiseTitle("Material dependencies")
         depListDict.initialiseButton("showDepSelectedMat","Selected material",selectedMaterialDependencies)
         depListDict.initialiseButton("showOrDeps","OR dependencies",showOrDependencies)
+
+        def selectedMaterialTags():
+            """
+            Displays the tags of the selected material in tagsListDict
+            """
+
+            tagsListDict.clear()
+
+            # Find selected material
+            selectedMaterialIndex = self.selectedMaterials.listbox.curselection()[0]
+            selectedMaterialName = self.selectedMaterials.listbox.get(selectedMaterialIndex)
+            selectedMaterial = self.selectedMaterials.dict[selectedMaterialName]
+
+            for tag in selectedMaterial.tags:
+                tagsListDict.addItem(tag,tag)
+
+            # Setting title of tagsListDict to show what material is being looked at
+            title = selectedMaterial.name + " tags"
+            tagsListDict.widgetDict["topLabel"].config(text=title)
+
+            tagsListDict.refreshListbox()
+
+
+        tagsListDict = ListDict(self.root,4,1)
+        tagsListDict.initialiseTitle("Material tags")
+        tagsListDict.initialiseButton("showTagsSelectedMat","Selected material",selectedMaterialTags)
 
         optionsFrame = Frame(self.root)
         settingsButton = Button(optionsFrame, text = "Settings",command=lambda:openSettings())
