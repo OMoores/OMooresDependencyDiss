@@ -35,10 +35,13 @@ def recommendOrder(materials : [Material], dependencyPriority : [str], resolvers
     for i in range(len(depWeb)):
         for j in range(len(depWeb[0])):
             symbolic_depWeb = Store(symbolic_depWeb, len(depWeb)*i+j, depWeb[i][j])
+
+    for i in range(0,len(depWeb)-1):
+        solver.add(symbolic_depWeb[order[i] * len(depWeb) + order[i+1]] <= symbolic_depWeb[order[i+1] * len(depWeb) + order[i]])
     
-    for i in range(len(depWeb)-1,-1,-1):
-        for j in range(len(depWeb)-1,i-1,-1):
-            solver.add(symbolic_depWeb[order[i] * len(depWeb) + order[j]] <= symbolic_depWeb[order[j] * len(depWeb) + order[i]])
+    # for i in range(len(depWeb)-1,-1,-1):
+    #     for j in range(len(depWeb)-1,i-1,-1):
+    #         solver.add(symbolic_depWeb[order[i] * len(depWeb) + order[j]] <= symbolic_depWeb[order[j] * len(depWeb) + order[i]])
 
 
     solver.check()
@@ -207,7 +210,9 @@ def selectMaterialWithName(name : str, materials : [Material]) -> Material:
 
     return None
     
-                
+def printOutMaterials(materials):
+    for mat in materials:
+        print(mat.name)
         
 
 
