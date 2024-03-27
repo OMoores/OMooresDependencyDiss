@@ -201,10 +201,16 @@ class Homepage:
         tagsListDict.initialiseTitle("Material tags")
         tagsListDict.initialiseButton("showTagsSelectedMat","Selected material",selectedMaterialTags)
 
+        def openMaterialConstructor(homepage):
+
+            constructor = MaterialConstructor(homepage)
+
         optionsFrame = Frame(self.root)
         settingsButton = Button(optionsFrame, text = "Settings",command=lambda:openSettings())
         settingsButton.grid(row=0, column=0)
+        constructorButton = Button(optionsFrame, text = "Material constructor",command=lambda:openMaterialConstructor(self))
         optionsFrame.grid(column=0,row=0)
+        constructorButton.grid(column=1,row=0)
 
         
 
@@ -537,12 +543,6 @@ class MaterialConstructor:
             materialTagsList.clear()
 
             
-            
-
-            
-
-
-
         materialConstructorWindow = Toplevel(homepage.root)        
         materialConstructorWindow.title("Material constructor")
 

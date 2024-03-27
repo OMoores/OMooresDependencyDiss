@@ -43,7 +43,6 @@ def recommendOrder(materials : [Material], dependencyPriority : [str], resolvers
     #     for j in range(len(depWeb)-1,i-1,-1):
     #         solver.add(symbolic_depWeb[order[i] * len(depWeb) + order[j]] <= symbolic_depWeb[order[j] * len(depWeb) + order[i]])
 
-
     solver.check()
     model = solver.model()
     order_values = [model[i].as_long() for i in order]
