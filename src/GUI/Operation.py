@@ -9,6 +9,7 @@ class Operation:
         self.root = root
         self.frame = Frame(root) # Holds all operations
         self.widgetDict = {}
+        self.opcode = None
 
         self.initialiseButton("addMatButton","Add material",self.addMaterial)
         self.initialiseButton("addAndButton","Add AND",self.addAND)
@@ -68,6 +69,8 @@ class Operation:
         """
         self.clearLabels()
 
+        self.opcode="MAT"
+
         self.initialiseLabel("addMatLabel","Enter material name:")
         self.initialiseEntry("materialEntry")
         self.initialiseButton("deleteMaterial","Delete material",self.destroy)
@@ -76,7 +79,11 @@ class Operation:
         """
         Replaces widgets with an OR operation 
         """
+
         self.clearLabels()
+
+        self.opcode="OR"
+
         self.widgetDict["ORLEFTBRACKET"] = Label(self.frame,text="(")
         self.widgetDict["ORLEFTBRACKET"].pack(side="left")
         self.widgetDict["ORLEFT"] = Operation(self.frame)
@@ -98,6 +105,8 @@ class Operation:
         """
 
         self.clearLabels()
+
+        self.opcode="AND"
         
         self.widgetDict["ANDLEFTBRACKET"] = Label(self.frame,text="(")
         self.widgetDict["ANDLEFTBRACKET"].pack(side="left")
