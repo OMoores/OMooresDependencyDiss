@@ -1,9 +1,7 @@
-from select import select
-from xmlrpc.client import boolean
-from django.urls import Resolver404
 from src.XmlHandler import XmlHandler
 from tkinter import *
 from src.GUI.ListDict import ListDict
+from src.GUI.Operation import Operation
 from src.Query import *
 from src.Recommendations import *
 
@@ -543,10 +541,10 @@ class MaterialConstructor:
             materialTagsList.clear()
 
             
-        materialConstructorWindow = Toplevel(homepage.root)        
-        materialConstructorWindow.title("Material constructor")
+        self.root = Toplevel(homepage.root)        
+        self.root.title("Material constructor")
 
-        topFrame = Frame(materialConstructorWindow)
+        topFrame = Frame(self.root)
         addMaterialButton = Button(topFrame,text="Add materials",command=()) 
         filenameEntry = Entry(topFrame)
         fileCreateButton = Button(topFrame,text="Create file:",command=())   
@@ -555,7 +553,7 @@ class MaterialConstructor:
         filenameEntry.grid(column=2,row=0)
         topFrame.grid(column=0,row=0)
 
-        newMaterialList = ListDict(materialConstructorWindow,0,1)
+        newMaterialList = ListDict(self.root,0,1)
         newMaterialList.initialiseTitle("Materials")
         newMaterialList.initialiseLabel("materialNameLabel","Material name")
         newMaterialList.initialiseEntry("materialNameEntry")
@@ -563,17 +561,32 @@ class MaterialConstructor:
         newMaterialList.initialiseButton("selectMaterialButton","Select material",selectMaterial)
         newMaterialList.initialiseButton("deleteMaterialButton","Delete material",deleteMaterial)
 
-        materialDepsList = ListDict(materialConstructorWindow,1,1)
+        def openDependencyConstructor():
+            constructor = DependencyConstructor(self)
+
+        materialDepsList = ListDict(self.root,1,1)
         materialDepsList.initialiseTitle("Dependencies of selected material")
-        materialDepsList.initialiseButton("depCreatorButton","createDependency",())
+        materialDepsList.initialiseButton("depCreatorButton","createDependency",openDependencyConstructor)
         materialDepsList.initialiseDeleteButton()
 
-        materialTagsList = ListDict(materialConstructorWindow,2,1)
+        materialTagsList = ListDict(self.root,2,1)
         materialTagsList.initialiseTitle("Tags of selected material")
         materialTagsList.initialiseLabel("tagEntryLabel","Tag")
         materialTagsList.initialiseEntry("tagEntry")
         materialTagsList.initialiseButton("addTagButton","Add tag",())
         materialTagsList.initialiseDeleteButton()
+
+class DependencyConstructor:
+    """
+    Opens a window for creating dependencies
+    """
+
+    def __init__(self, materialConstructor : MaterialConstructor):
+        self.root = Toplevel(materialConstructor.root)
+        self.root.title("Dependency Constructor")
+
+        operation = Operation(self.root)
+
 
 def turnMatDepIntoText(dependency  : []) -> str:
     """
