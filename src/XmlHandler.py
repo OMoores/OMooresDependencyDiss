@@ -61,8 +61,8 @@ class XmlHandler:
 
     def initMaterial(child) -> Material:
         """
-        Takes the child of the root of a correctly formatted xml file (the material tag) and returns a Material object created from the name and tag found in the child
-Exception
+        Takes the child of the root of a correctly formatted xml file (the material tag) and returns a Material object created from the name and tag found in the child 
+        
         Params:
             - child : Contains the information about a material from an xml file -> etree.parse(path).getroot()[index] will return a child from an appropriate xml file path
 

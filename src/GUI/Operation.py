@@ -17,6 +17,33 @@ class Operation:
 
         self.frame.pack(side="left")
 
+    def getTempDep(self):
+        """
+        Returns the operation in the format of a tempDep -> [opcode, matname, matname (optional)] 
+
+        Returns:
+        A list in the form of a tempDep
+        """
+
+        tempDep = []
+        if self.opcode == None: # If opcode is none then there is a field that has not been set to an operation (is just 3 buttons -> Needs to be set to OR AND or MAT to create a dep)
+            raise Exception
+
+        if self.opcode == "MAT":
+            tempDep.append(None) # Opcode for materials
+            tempDep.append(self.widgetDict["materialEntry"].get()) # Getting the name of material
+        elif self.opcode == "AND":
+            tempDep.append(self.opcode)
+            tempDep.append(self.widgetDict["ANDLEFT"].getTempDep())
+            tempDep.append(self.widgetDict["ANDRIGHT"].getTempDep())
+        elif self.opcode == "OR":
+            tempDep.append(self.opcode)
+            tempDep.append(self.widgetDict["ORLEFT"].getTempDep())
+            tempDep.append(self.widgetDict["ORRIGHT"].getTempDep())
+
+        return tempDep
+
+
     def destroy(self):
         """
         Destroys this operation and replaces it with a new empty one

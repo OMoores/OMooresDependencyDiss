@@ -510,21 +510,21 @@ class MaterialConstructor:
             tags = selectedMaterial.tags
 
             # Clear dep and tags list
-            materialDepsList.dict = {}
+            self.materialDepsList.dict = {}
             materialTagsList.dict = {}
 
             # Setting dependency list
             for dependency in dependencies:
-                materialDepsList.addItem(dependency.name,dependency)
+                self.materialDepsList.addItem(dependency.name,dependency)
 
             for tag in tags:
                 materialTagsList.addItem(tag,tag)
             
-            materialDepsList.refreshListbox()
+            self.materialDepsList.refreshListbox()
             materialTagsList.refreshListbox()
 
             depString = str("Dependencies of " + selectedMaterial.name)
-            materialDepsList.widgetDict["topLabel"].config(text=depString)
+            self.materialDepsList.widgetDict["topLabel"].config(text=depString)
 
             tagString = str("Tags of " + selectedMaterial.name)
             materialTagsList.widgetDict["topLabel"].config(text=depString)
@@ -537,7 +537,7 @@ class MaterialConstructor:
                 newMaterialList.listbox.delete(END,itemIndex)
                 newMaterialList.refreshListbox()
 
-            materialDepsList.clear()
+            self.materialDepsList.clear()
             materialTagsList.clear()
 
             
@@ -564,10 +564,10 @@ class MaterialConstructor:
         def openDependencyConstructor():
             constructor = DependencyConstructor(self)
 
-        materialDepsList = ListDict(self.root,1,1)
-        materialDepsList.initialiseTitle("Dependencies of selected material")
-        materialDepsList.initialiseButton("depCreatorButton","createDependency",openDependencyConstructor)
-        materialDepsList.initialiseDeleteButton()
+        self.materialDepsList = ListDict(self.root,1,1)
+        self.materialDepsList.initialiseTitle("Dependencies of selected material")
+        self.materialDepsList.initialiseButton("depCreatorButton","createDependency",openDependencyConstructor)
+        self.materialDepsList.initialiseDeleteButton()
 
         materialTagsList = ListDict(self.root,2,1)
         materialTagsList.initialiseTitle("Tags of selected material")
@@ -584,8 +584,28 @@ class DependencyConstructor:
     def __init__(self, materialConstructor : MaterialConstructor):
         self.root = Toplevel(materialConstructor.root)
         self.root.title("Dependency Constructor")
+        
+        addDep = Button(self.root, text="Create dependency",command=lambda:self.addDependency(materialConstructor))
+        addDep.pack()
+        depLevelLabel = Label(self.root,text="Dependency level")
+        depLevelLabel.pack()
+        self.depLevelEntry = Entry(self.root)
+        self.depLevelEntry.pack()
 
-        operation = Operation(self.root)
+        self.operation = Operation(self.root)
+
+    def addDependency(self,materialConstructor : MaterialConstructor):
+        """
+        Adds the dependency currently in the constructor to the materialConstructors current material
+        """
+        tempDep = [self.operation.getTempDep(),self.depLevelEntry.get()]
+        tempDepString = str(tempDep[0])
+        key = tempDep[1] + ": " + tempDepString # Key for dict -> What will appear to user to represent the dep
+        materialConstructor.materialDepsList.addItem(key,tempDep)
+        
+
+        
+
 
 
 def turnMatDepIntoText(dependency  : []) -> str:
