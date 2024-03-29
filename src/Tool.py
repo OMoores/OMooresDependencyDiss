@@ -38,20 +38,7 @@ class Homepage:
         self.depPriorityDict = {}
         self.resolversDict ={}
 
-        def importMaterials():
-            """
-            This function will import materials to materialList
-            """
-
-            path = self.materialList.widgetDict["pathEntry"].get()
-
-            materials = XmlHandler.parseXmlFiles([path])
-
-            for material in materials:
-                if self.materialList.dict.get(material.name) is None:
-                    self.materialList.dict[material.name] = material
-            
-            self.materialList.refreshListbox()
+        
 
         def selectItemFromMatList():
             """
@@ -99,7 +86,7 @@ class Homepage:
         self.materialList.initialiseTitle("Material List")
         self.materialList.initialiseLabel("pathWidget","Material file path:")
         self.materialList.initialiseEntry("pathEntry")
-        self.materialList.initialiseButton("importMaterials","Import materials",importMaterials)
+        self.materialList.initialiseButton("importMaterials","Import materials",self.importMaterials)
         self.materialList.initialiseButton("selectMaterials","Select material",selectItemFromMatList)
         self.materialList.initialiseLabel("selectTagsLabel","Select materials with tags:")
         self.materialList.initialiseEntry("selectTagsEntry")
@@ -213,6 +200,34 @@ class Homepage:
         
 
         self.root.mainloop()
+
+    def importMaterials(self):
+            """
+            This function will import materials to materialList
+            """
+
+            path = self.materialList.widgetDict["pathEntry"].get()
+
+            materials = XmlHandler.parseXmlFiles([path])
+
+            for material in materials:
+                if self.materialList.dict.get(material.name) is None:
+                    self.materialList.dict[material.name] = material
+            
+            self.materialList.refreshListbox()
+
+    def importTemp(self):
+
+        path = "temp.xml"
+
+        materials = XmlHandler.parseXmlFiles([path])
+
+        for material in materials:
+            if self.materialList.dict.get(material.name) is None:
+                self.materialList.dict[material.name] = material
+        
+        self.materialList.refreshListbox()
+
 
 
 class QueryPage:
@@ -471,17 +486,25 @@ class SettingsPage():
 class MaterialConstructor:
     
     def __init__(self, homepage : Homepage): 
+        """
+        A window for creating materials. Materials in this window do not have proper dependencies until they are created and set to a file or sent to the main window. They have tempDeps filled in with strings representing material name
+        """
+    
 
-        selectedMaterial = None
+        self.selectedMaterial : Material = None
 
         def createMaterial():
             """
-            Creates an empty material
+            Creates an empty material and selects it
             """
 
-            materialName = newMaterialList.widgetDict["materialNameEntry"].get()
+            materialName = self.newMaterialList.widgetDict["materialNameEntry"].get()
 
-            newMaterialList.addItem(materialName,Material(materialName))
+            self.newMaterialList.addItem(materialName,Material(materialName))
+
+            self.selectedMaterial = self.newMaterialList.dict[materialName]
+            
+            self.refreshWindow()
 
         def selectMaterial():
             """
@@ -491,90 +514,128 @@ class MaterialConstructor:
             # If cannot select a material selectedMaterial is set to None
             try:
                 # Selecting the material
-                selectedMaterialIndex = newMaterialList.listbox.curselection()[0]
-                selectedMaterialName = newMaterialList.listbox.get(selectedMaterialIndex)
-                selectedMaterial = newMaterialList.dict[selectedMaterialName]
+                selectedMaterialIndex = self.newMaterialList.listbox.curselection()[0]
+                selectedMaterialName = self.newMaterialList.listbox.get(selectedMaterialIndex)
+                self.selectedMaterial = self.newMaterialList.dict[selectedMaterialName]
 
-                displayMaterial(selectedMaterial)
+                displayMaterial(self.selectedMaterial)
                 
             except:
-                selectedMaterial = None
+                self.selectedMaterial = None
 
         def displayMaterial(selectedMaterial : Material):
             """
             Takes a material and displays the materials deps and tags
             """
 
-            # Making tags and deps the tags and deps of this material
-            dependencies = selectedMaterial.dependencies
-            tags = selectedMaterial.tags
+            self.selectedMaterial = selectedMaterial
+            self.refreshWindow()
 
-            # Clear dep and tags list
-            self.materialDepsList.dict = {}
-            materialTagsList.dict = {}
-
-            # Setting dependency list
-            for dependency in dependencies:
-                self.materialDepsList.addItem(dependency.name,dependency)
-
-            for tag in tags:
-                materialTagsList.addItem(tag,tag)
             
-            self.materialDepsList.refreshListbox()
-            materialTagsList.refreshListbox()
-
-            depString = str("Dependencies of " + selectedMaterial.name)
-            self.materialDepsList.widgetDict["topLabel"].config(text=depString)
-
-            tagString = str("Tags of " + selectedMaterial.name)
-            materialTagsList.widgetDict["topLabel"].config(text=depString)
 
         def deleteMaterial():
 
-            for itemIndex in reversed(newMaterialList.listbox.curselection()):
-                itemName = newMaterialList.listbox.get(itemIndex)
-                del newMaterialList.dict[itemName]
-                newMaterialList.listbox.delete(END,itemIndex)
-                newMaterialList.refreshListbox()
+            for itemIndex in reversed(self.newMaterialList.listbox.curselection()):
+                itemName = self.newMaterialList.listbox.get(itemIndex)
+                del self.newMaterialList.dict[itemName]
+                self.newMaterialList.listbox.delete(END,itemIndex)
+                self.newMaterialList.refreshListbox()
 
             self.materialDepsList.clear()
-            materialTagsList.clear()
+            self.materialTagsList.clear()
 
             
         self.root = Toplevel(homepage.root)        
         self.root.title("Material constructor")
 
         topFrame = Frame(self.root)
-        addMaterialButton = Button(topFrame,text="Add materials",command=()) 
-        filenameEntry = Entry(topFrame)
-        fileCreateButton = Button(topFrame,text="Create file:",command=())   
+        addMaterialButton = Button(topFrame,text="Add materials",command=lambda:self.addMaterialsToHomepage(homepage)) 
+        self.filenameEntry = Entry(topFrame)
+        fileCreateButton = Button(topFrame,text="Create file:",command=lambda:self.createFile())   
         addMaterialButton.grid(column=0,row=0)
         fileCreateButton.grid(column=1,row=0)
-        filenameEntry.grid(column=2,row=0)
+        self.filenameEntry.grid(column=2,row=0)
         topFrame.grid(column=0,row=0)
 
-        newMaterialList = ListDict(self.root,0,1)
-        newMaterialList.initialiseTitle("Materials")
-        newMaterialList.initialiseLabel("materialNameLabel","Material name")
-        newMaterialList.initialiseEntry("materialNameEntry")
-        newMaterialList.initialiseButton("createMaterialButton","Create material",createMaterial)
-        newMaterialList.initialiseButton("selectMaterialButton","Select material",selectMaterial)
-        newMaterialList.initialiseButton("deleteMaterialButton","Delete material",deleteMaterial)
+        self.newMaterialList = ListDict(self.root,0,1)
+        self.newMaterialList.initialiseTitle("Materials")
+        self.newMaterialList.initialiseLabel("materialNameLabel","Material name")
+        self.newMaterialList.initialiseEntry("materialNameEntry")
+        self.newMaterialList.initialiseButton("createMaterialButton","Create material",createMaterial)
+        self.newMaterialList.initialiseButton("selectMaterialButton","Select material",selectMaterial)
+        self.newMaterialList.initialiseButton("deleteMaterialButton","Delete material",deleteMaterial)
 
         def openDependencyConstructor():
             constructor = DependencyConstructor(self)
 
         self.materialDepsList = ListDict(self.root,1,1)
         self.materialDepsList.initialiseTitle("Dependencies of selected material")
-        self.materialDepsList.initialiseButton("depCreatorButton","createDependency",openDependencyConstructor)
+        self.materialDepsList.initialiseButton("depCreatorButton","Create dependency",openDependencyConstructor)
         self.materialDepsList.initialiseDeleteButton()
 
-        materialTagsList = ListDict(self.root,2,1)
-        materialTagsList.initialiseTitle("Tags of selected material")
-        materialTagsList.initialiseLabel("tagEntryLabel","Tag")
-        materialTagsList.initialiseEntry("tagEntry")
-        materialTagsList.initialiseButton("addTagButton","Add tag",())
-        materialTagsList.initialiseDeleteButton()
+        def addTag():
+            """
+            Adds tag to currently selected material
+            """
+            self.selectedMaterial.addTags([self.materialTagsList.widgetDict["tagEntry"].get()]) 
+            self.refreshWindow()
+
+        self.materialTagsList = ListDict(self.root,2,1)
+        self.materialTagsList.initialiseTitle("Tags of selected material")
+        self.materialTagsList.initialiseLabel("tagEntryLabel","Tag")
+        self.materialTagsList.initialiseEntry("tagEntry")
+        self.materialTagsList.initialiseButton("addTagButton","Add tag",addTag)
+        self.materialTagsList.initialiseDeleteButton()
+
+    def refreshWindow(self):
+        """
+        Refreshes all listboxes and displays deps and tags of selected material
+        """
+
+        # Making tags and deps the tags and deps of this material
+        dependencies = self.selectedMaterial.dependencies
+        tags = self.selectedMaterial.tags
+
+        # Clear dep and tags list
+        self.materialDepsList.dict = {}
+        self.materialTagsList.dict = {}
+
+        # Setting dependency list
+        for dependency in dependencies:
+            # Getting key that will represent dependency -> What the user will see
+            depStr = str(dependency[0])
+            depLvlStr = str(dependency[1])
+            key = depLvlStr + ": " + depStr
+            self.materialDepsList.addItem(key,dependency)
+
+        for tag in tags:
+            self.materialTagsList.addItem(tag,tag)
+        
+        self.materialDepsList.refreshListbox()
+        self.materialTagsList.refreshListbox()
+
+        depString = str("Dependencies of " + self.selectedMaterial.name)
+        self.materialDepsList.widgetDict["topLabel"].config(text=depString)
+
+        tagString = str("Tags of " + self.selectedMaterial.name)
+        self.materialTagsList.widgetDict["topLabel"].config(text=depString)
+
+    def createFile(self):
+        """
+        Creates an XML file using the materials and filename provided in the constructor
+        """
+
+        XmlHandler.createXmlFile(self.filenameEntry.get(),list(self.newMaterialList.dict.values()))
+        
+    def addMaterialsToHomepage(self, homepage : Homepage):
+        """
+        Adds materials to the homepage by exporting materials to a temp file then importing them to the homepage
+        """
+
+        XmlHandler.createXmlFile("temp",list(self.newMaterialList.dict.values()))
+        homepage.importTemp()
+
+
 
 class DependencyConstructor:
     """
@@ -599,10 +660,13 @@ class DependencyConstructor:
         Adds the dependency currently in the constructor to the materialConstructors current material
         """
         tempDep = [self.operation.getTempDep(),self.depLevelEntry.get()]
-        tempDepString = str(tempDep[0])
-        key = tempDep[1] + ": " + tempDepString # Key for dict -> What will appear to user to represent the dep
-        materialConstructor.materialDepsList.addItem(key,tempDep)
-        
+
+        materialConstructor.selectedMaterial.addDependency(tempDep)
+
+        materialConstructor.refreshWindow()
+
+        self.root.destroy()
+        self = None
 
         
 

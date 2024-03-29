@@ -276,3 +276,68 @@ class XmlHandler:
                 Debug.printHighPriority("When reading XML file found OR statement with more then 2 materials")
         else:
             return XmlHandler.createOperation(element[0])
+        
+    def createXmlFile(fileName : str, materials : [Material]) -> bool:
+        """
+        Takes a list of materials with tempDeps (dependencies with names of materials not material objects) and creates an XML file 
+
+        Params:
+        - fileName : The name of the file being created (does not have .xml that is added in this function)
+        - materials : A list of materials being added to the file
+
+        Returns:
+        A bool representing if the file is successfully created
+        """
+        try:
+            root = etree.Element("materials")
+
+            for material in materials:
+
+                materialTag = etree.SubElement(root,"material")
+                fileNameTag = etree.SubElement(materialTag,"fileName")
+                fileNameTag.text=material.name
+
+                # Creating tags tag and adding materials tags
+                tagsTag = etree.SubElement(materialTag,"tags")
+                for tag in material.tags:
+                    tagTag = etree.SubElement(tagsTag,"tag")
+                    tagTag.text=tag
+
+                # Creating dependency tags -> Unpacking tempDeps 
+                dependenciesTag = etree.SubElement(materialTag,"dependencies")
+                for dependency in material.dependencies:
+                    
+                    # Creating the depLevel tag
+                    depLevelTag = etree.SubElement(dependenciesTag,dependency[1])
+
+                    XmlHandler.createDependencyTag(depLevelTag,dependency[0])
+
+            tree = etree.ElementTree(root)
+            fileName = fileName+".xml"
+            tree.write(fileName)
+
+            return True
+        except:
+            return False
+            
+    def createDependencyTag(root, tempDep : []):
+        """
+        Takes a tempDep from a material created using the material constructor and a root etree element and creates an etree tag structure to represent the tempDep.
+
+        Params:
+        - root : The root etree element elements are being created in
+        - tempDep : A dependency from a material created in the material creator -> Uses names as placeholders for material object references. Does not include the depLevel so is only an operation
+        """
+
+        if tempDep[0] == None:
+            materialTag = etree.SubElement(root,"material")
+            materialTag.text=tempDep[1]
+        elif tempDep[0] == "OR":
+            ORTag = etree.SubElement(root,"OR")
+            XmlHandler.createDependencyTag(ORTag,tempDep[1])
+            XmlHandler.createDependencyTag(ORTag,tempDep[2])
+        elif tempDep[0] == "AND":
+            ANDTag = etree.SubElement(root,"AND")
+            XmlHandler.createDependencyTag(ANDTag,tempDep[1])
+            XmlHandler.createDependencyTag(ANDTag,tempDep[2])
+

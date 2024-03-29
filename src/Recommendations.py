@@ -7,6 +7,8 @@ def recommendOrder(materials : [Material], dependencyPriority : [str], resolvers
     """
     Takes a set of materials and recommends an order to learn the materials in based of the materials 
     dependencies and the priority of the dependency levels
+
+    The first item in the recommendation is the first to learn the last item is the last
     
     Does this using the z3 SAT solver
 
@@ -15,11 +17,12 @@ def recommendOrder(materials : [Material], dependencyPriority : [str], resolvers
     dependencyPriority : A list of dependency levels in order of importance
 
     Returns:
-    A set of materials in a recommended order. The first material in the list is the last to learn
+    A set of materials in a recommended order
     """
 
     solver = Solver()
 
+    
 
     depWeb = createDependencyWeb(materials,dependencyPriority, resolvers)
 
@@ -32,16 +35,27 @@ def recommendOrder(materials : [Material], dependencyPriority : [str], resolvers
 
     # Making symbolic dependeny web and constraining its values to those in depWeb
     symbolic_depWeb = Array('symbolic_depWeb', IntSort(), IntSort())
+
     for i in range(len(depWeb)):
         for j in range(len(depWeb[0])):
             symbolic_depWeb = Store(symbolic_depWeb, len(depWeb)*i+j, depWeb[i][j])
 
-    for i in range(0,len(depWeb)-1):
-        solver.add(symbolic_depWeb[order[i] * len(depWeb) + order[i+1]] <= symbolic_depWeb[order[i+1] * len(depWeb) + order[i]])
-    
-    # for i in range(len(depWeb)-1,-1,-1):
-    #     for j in range(len(depWeb)-1,i-1,-1):
-    #         solver.add(symbolic_depWeb[order[i] * len(depWeb) + order[j]] <= symbolic_depWeb[order[j] * len(depWeb) + order[i]])
+    # Looking for materials with no dependencies and put these at the start of the list
+    noDepPriority = len(dependencyPriority) # The number that represents not having a dep
+    noDependencies = []
+    for index in range(0,len(depWeb)):
+        if all(element == noDepPriority for element in depWeb[index]): # Testing to see if items are all 
+            noDependencies.append(index)
+    nextToAssignIndex = 0 # Items with no dependencies are put in the order first, this represents the first index of the recommendation that has not been decided
+    # Setting these items with no deps to be first items in recomendation
+    for index in noDependencies:
+        solver.add(order[index] == noDependencies[index])
+        nextToAssignIndex = index+1
+
+    # Setting constraints for the rest of the recommendation 
+    for i in range(len(depWeb)-1,nextToAssignIndex-1,-1):
+        for j in range(len(depWeb)-1,i-1,-1):
+            solver.add(symbolic_depWeb[order[i] * len(depWeb) + order[j]] >= symbolic_depWeb[order[j] * len(depWeb) + order[i]])
 
     solver.check()
     model = solver.model()
