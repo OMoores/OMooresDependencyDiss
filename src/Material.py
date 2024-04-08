@@ -181,6 +181,19 @@ class Material:
         for i in range(len(resolver)):
             if resolver[i][0] is None: # This index of resolver is a tag list
 
+                # Checks if negation occurs in any of the resolvers
+                for tag in resolver[i][1:]:
+                    if tag[0] == "-":
+                        print(tag[1:])
+                        if not Utility.isAinB(tag[1:],self.tags): # The negated tag is not present so this is valid
+
+                            if len(resolver[i][1:]) == 1: # If the negated tag is the only resolver then this resolution level is true => resolver would be [[None,-tag],...]
+                                return i
+                            else:
+                                resolver[i].remove(tag)
+                                
+                                       
+
                 # If the tags (the first item in a list of tags in the resolver is none to flag that the list is tags not a name
                 if Utility.isASubsetB(resolver[i][1:],self.tags):
                     return i

@@ -281,8 +281,6 @@ class QueryPage:
             materials = list(toQueryList.dict.values())
             resolvers = getResolvers()
 
-            print(resolvers)
-
             # Create query
             query = Query()
             for clause in list(clauseList.dict.values()):
