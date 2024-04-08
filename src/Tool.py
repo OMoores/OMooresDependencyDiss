@@ -279,13 +279,16 @@ class QueryPage:
             queryResultList.clear()
             
             materials = list(toQueryList.dict.values())
+            resolvers = getResolvers()
+
+            print(resolvers)
 
             # Create query
             query = Query()
             for clause in list(clauseList.dict.values()):
                 query.addClause(clause)
 
-            queryResult = queryDependencies(materials,query)
+            queryResult = queryDependencies(materials,query,resolvers)
 
             for material in queryResult:
                 queryResultList.addItem(material.name,material)
@@ -303,7 +306,7 @@ class QueryPage:
             resolverEntry = resolversList.widgetDict["resolver"].get()
             resolvers = resolverEntry.split(",")
             resolvers = [None]+resolvers
-            resolversList.addItem("Tags: "+resolverEntry,[resolvers])
+            resolversList.addItem("Tags: "+resolverEntry,resolvers)
             resolversList.refreshListbox()
 
         def addDepLevelToClause():
@@ -343,6 +346,11 @@ class QueryPage:
         varList.initialiseEntry("varEntry")
         varList.initialiseButton("addVar","Add variable",addVarToClause)
         varList.initialiseDeleteButton()
+
+        def getResolvers():
+
+            return list(resolversList.dict.values())
+
 
 
         resolversList = ListDict(queryWindow,2,0)
@@ -618,7 +626,7 @@ class MaterialConstructor:
         self.materialDepsList.widgetDict["topLabel"].config(text=depString)
 
         tagString = str("Tags of " + self.selectedMaterial.name)
-        self.materialTagsList.widgetDict["topLabel"].config(text=depString)
+        self.materialTagsList.widgetDict["topLabel"].config(text=tagString)
 
     def createFile(self):
         """

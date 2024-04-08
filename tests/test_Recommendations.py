@@ -73,7 +73,7 @@ class TestRecommendations(unittest.TestCase):
         resolvers = [[None,"Physics"]]
         test1Set = recommendOrder(material1Set, dependencyPriority,resolvers)
         printOutMaterials(test1Set)
-        self.assertTrue(isRecommendationValid(test1Set,dependencyPriority,resolvers = resolvers))
+        self.assertTrue(isRecommendationValid(list(reversed(test1Set)),dependencyPriority,resolvers = resolvers))
 
 
         

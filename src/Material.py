@@ -233,7 +233,7 @@ def extractOperation(operation, dependencyLevel, resolvers : [[str]] = []) -> [[
     if operation[0] == "AND":
         return extractOperation(operation[1],dependencyLevel, resolvers) + extractOperation(operation[2],dependencyLevel,resolvers)
     if operation[0] == "OR": # Try to resolve OR, if cannot errors
-
+        
         # If cannot find material in operation due to insufficient resolver information then picks the other set of material (assuming this set can be resolved) else errors
         try:
             operation1Materials = resolveOperation(operation[1], dependencyLevel, resolvers)
@@ -278,6 +278,7 @@ def resolveOperation(operation, dependencyLevel, resolvers) -> [int,[[Material,s
     A list of materials and their dependencies in the format [int,[[Material, str]]]. The int represents the resolution level of this operation
     """
 
+
     # This gets a list of materials then need to find the resolutionLevel of each material, if a material does not have a resolution level then error
     extractedMaterials = extractOperation(operation, dependencyLevel, resolvers) # Materials extracted from the operation in the format [material, dependency level]
     resolutionLevel = 0
@@ -288,6 +289,7 @@ def resolveOperation(operation, dependencyLevel, resolvers) -> [int,[[Material,s
             raise Exception("Resolution failed")
         if currentResolutionLevel > resolutionLevel:
             resolutionLevel = currentResolutionLevel
+
         
     return [resolutionLevel, extractedMaterials]
 

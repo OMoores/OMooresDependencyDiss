@@ -254,20 +254,20 @@ def isClauseValid(material, dependencyLevel : str, clause : Clause) -> bool:
         
     return True
 
-def isVariableValid(material, variables : []) -> bool:
+def isVariableValid(material, tags : []) -> bool:
     """
     Takes a variable (a set of tags) and returns true if the material has any of these tags
     """
 
     # Check for wildcard
-    if Utility.isAinB("*",variables):
+    if Utility.isAinB("*",tags):
         return True
     # Check for negation
-    for variable in variables:
-        if variable[0] == "-":
-            if not Utility.isAinB(variable[1:],material.tags):
+    for tag in tags:
+        if tag[0] == "-":
+            if not Utility.isAinB(tag[1:],material.tags):
                 return True
-        elif Utility.isAinB(variable,material.tags):
+        elif Utility.isAinB(tag,material.tags):
             return True 
     return False
     
