@@ -291,10 +291,29 @@ def resolveOperation(operation, dependencyLevel, resolvers) -> [int,[[Material,s
     A list of materials and their dependencies in the format [int,[[Material, str]]]. The int represents the resolution level of this operation
     """
 
+    # Finding the resolution level of AND
+    if operation[0] == "AND":
+
+        # Finding the lowest resolution level of each operation
+        try:
+            operation1ResolutionLevel = resolveOperation(operation[1],dependencyLevel,resolvers)
+            operation2ResolutionLevel = resolveOperation(operation[2],dependencyLevel,resolvers)
+        except:
+            raise Exception("Resolution failed")
+
+
+        if operation1ResolutionLevel[0] >= operation2ResolutionLevel[0]:
+            returnVal = [operation1ResolutionLevel[0]] + [extractOperation(operation[1], dependencyLevel, resolvers) + extractOperation(operation[2], dependencyLevel, resolvers)]
+            return returnVal
+        else:
+            returnVal = [operation2ResolutionLevel[0]] + [extractOperation(operation[1], dependencyLevel, resolvers) + extractOperation(operation[2], dependencyLevel, resolvers)]
+            return returnVal
+
 
     # This gets a list of materials then need to find the resolutionLevel of each material, if a material does not have a resolution level then error
     extractedMaterials = extractOperation(operation, dependencyLevel, resolvers) # Materials extracted from the operation in the format [material, dependency level]
     resolutionLevel = 0
+
 
     for resolution in extractedMaterials:
         currentResolutionLevel = resolution[0].resolutionLevel(resolvers)
@@ -305,6 +324,23 @@ def resolveOperation(operation, dependencyLevel, resolvers) -> [int,[[Material,s
 
         
     return [resolutionLevel, extractedMaterials]
+
+
+def jointResolutionLevel(operation1,operation2,resolvers) -> int:
+    """
+    Takes 2 operations and finds highest common resolution level
+
+    Params:
+    - operation1 : An operation 
+    - operation1 : An operation 
+    - resolvers : A set of resovlers that will be used to find the resolution level
+
+    Returns:
+    The Highest common resolution level of both of these operations
+    """
+
+    # If operation 1 is a material
+
 
 
 
