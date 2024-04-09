@@ -77,6 +77,9 @@ class Material:
 
         return len(self.tags)
 
+    def deleteTags(self, tags : [str]):
+        for tag in tags:
+            self.tags.remove(tag)
 
     
 
@@ -273,7 +276,10 @@ def extractOperation(operation, dependencyLevel, resolvers : [[str]] = []) -> [[
         elif operation2Materials[0] > operation1Materials[0]:
             return operation1Materials[1]
         else:
-            raise Exception("Could not resolve an OR with operations:\n",operation[1], "\n",operation[2],"\nWith resolvers: ",resolvers, "\nBoth had same resolution level so no decision could be made")
+            #Tries to resolve without the resolution level they were both succesful with, sees if there is another that one has priority with
+            resolvers.pop(operation1Materials[0])
+            return extractOperation(operation,dependencyLevel,resolvers)
+            #raise Exception("Could not resolve an OR with operations:\n",operation[1], "\n",operation[2],"\nWith resolvers: ",resolvers, "\nBoth had same resolution level so no decision could be made")
         
 
 def resolveOperation(operation, dependencyLevel, resolvers) -> [int,[[Material,str],...]]:
