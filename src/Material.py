@@ -332,21 +332,6 @@ def resolveOperation(operation, dependencyLevel, resolvers) -> [int,[[Material,s
     return [resolutionLevel, extractedMaterials]
 
 
-def jointResolutionLevel(operation1,operation2,resolvers) -> int:
-    """
-    Takes 2 operations and finds highest common resolution level
-
-    Params:
-    - operation1 : An operation 
-    - operation1 : An operation 
-    - resolvers : A set of resovlers that will be used to find the resolution level
-
-    Returns:
-    The Highest common resolution level of both of these operations
-    """
-
-    # If operation 1 is a material
-
 
 
 
