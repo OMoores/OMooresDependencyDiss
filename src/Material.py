@@ -295,29 +295,7 @@ def resolveOperation(operation, dependencyLevel, resolvers) -> [int,[[Material,s
 
     Returns:
     A list of materials and their dependencies in the format [int,[[Material, str]]]. The int represents the resolution level of this operation
-    """
-
-    # Finding the resolution level of AND -> The lowerst common resolution level of both operations in the AND
-    if operation[0] == "AND":
-
-        # Finding the lowest resolution level of each operation
-        try:
-            operation1Resolution = resolveOperation(operation[1],dependencyLevel,resolvers)
-            operation2Resolution = resolveOperation(operation[2],dependencyLevel,resolvers)
-        except:
-            raise Exception("Resolution failed")
-
-        # Returns the lowest common resolution level
-        if operation1Resolution[0] == operation2Resolution[0]:
-            returnVal = [operation1Resolution[0]] + [extractOperation(operation[1], dependencyLevel, resolvers) + extractOperation(operation[2], dependencyLevel, resolvers)]
-            return returnVal
-        # If resolution level is not same removes lowest resolution level of the 2 and tries again
-        elif operation1Resolution[0] < operation2Resolution[0]:
-            resolvers.pop(operation1Resolution[0])
-            return resolveOperation(operation,dependencyLevel,resolvers)
-        else:
-            resolvers.pop(operation2Resolution[0])
-            return resolveOperation(operation,dependencyLevel,resolvers)        
+    """     
     
     # This gets a list of materials then need to find the resolutionLevel of each material, if a material does not have a resolution level then error
     extractedMaterials : [] = extractOperation(operation, dependencyLevel, resolvers) # Materials extracted from the operation in the format [material, dependency level]
