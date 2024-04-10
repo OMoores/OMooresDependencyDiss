@@ -318,10 +318,7 @@ def resolveOperation(operation, dependencyLevel, resolvers) -> [int,[[Material,s
         else:
             resolvers.pop(operation2Resolution[0])
             return resolveOperation(operation,dependencyLevel,resolvers)        
-    # Finding the resolution level of OR -> The resolution level of operation in the operation selected by the resolvers
-
-    # Finding the resolution level of Material 
-
+    
     # This gets a list of materials then need to find the resolutionLevel of each material, if a material does not have a resolution level then error
     extractedMaterials : [] = extractOperation(operation, dependencyLevel, resolvers) # Materials extracted from the operation in the format [material, dependency level]
 
