@@ -589,12 +589,18 @@ class MaterialConstructor:
             self.selectedMaterial.addTags([self.materialTagsList.widgetDict["tagEntry"].get()]) 
             self.refreshWindow()
 
+        def deleteTags():
+            selectedTag = self.materialTagsList.listbox.curselection()
+            tagName = self.materialTagsList.listbox.get(selectedTag)    
+            tag = self.materialTagsList.dict[tagName]                      
+            self.selectedMaterial.deleteTags([tag])
+            self.refreshWindow()
         self.materialTagsList = ListDict(self.root,2,1)
         self.materialTagsList.initialiseTitle("Tags of selected material")
         self.materialTagsList.initialiseLabel("tagEntryLabel","Tag")
         self.materialTagsList.initialiseEntry("tagEntry")
         self.materialTagsList.initialiseButton("addTagButton","Add tag",addTag)
-        self.materialTagsList.initialiseDeleteButton()
+        self.materialTagsList.initialiseButton("deleteTagButton","Delete tag",deleteTags)
 
     def refreshWindow(self):
         """
