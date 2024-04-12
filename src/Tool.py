@@ -54,18 +54,21 @@ class Homepage:
 
             queryPage = QueryPage(self)
 
-        def openSettings():
-            settingsPage = SettingsPage(self)
 
         def getRecommendOrder():
+
+            def recommendOrderFunc():
+                recommendedOrder = recommendOrder(list(self.selectedMaterials.dict.values()),list(self.depPriorityDict.values()),list(self.resolversDict.values()))
+
+                self.selectedMaterials.dict = {}
+
+                for material in recommendedOrder:
+                    self.selectedMaterials.addItem(material.name,material)
+                self.selectedMaterials.refreshListbox()
+
+            settingsPage = SettingsPage(self, recommendOrderFunc)
             
-            recommendedOrder = recommendOrder(list(self.selectedMaterials.dict.values()),list(self.depPriorityDict.values()),list(self.resolversDict.values()))
-
-            self.selectedMaterials.dict = {}
-
-            for material in recommendedOrder:
-                self.selectedMaterials.addItem(material.name,material)
-            self.selectedMaterials.refreshListbox()
+            
 
         def getMaterialsWithTags():
 
@@ -191,8 +194,6 @@ class Homepage:
             constructor = MaterialConstructor(homepage)
 
         optionsFrame = Frame(self.root)
-        settingsButton = Button(optionsFrame, text = "Settings",command=lambda:openSettings())
-        settingsButton.grid(row=0, column=0)
         constructorButton = Button(optionsFrame, text = "Material constructor",command=lambda:openMaterialConstructor(self))
         optionsFrame.grid(column=0,row=0)
         constructorButton.grid(column=1,row=0)
@@ -207,9 +208,7 @@ class Homepage:
             """
 
             paths = self.materialList.widgetDict["pathEntry"].get()
-            print(paths)
             paths = paths.split(",")
-            print(paths)
 
             materials = XmlHandler.parseXmlFiles(paths)
 
@@ -428,12 +427,15 @@ class QueryPage:
         
 
 class SettingsPage():
+    """
+    A settings page opened before materials are queried, recommendOrderFunc is the function that recommendsOrder and sets materials in homepage
+    """
 
-    def __init__(self,homepage : Homepage):
+    def __init__(self,homepage : Homepage, recommendOrderFunc):
         root = homepage.root
 
-        recommendWindow = Toplevel(root)
-        recommendWindow.title("Settings")
+        self.recommendWindow = Toplevel(root)
+        self.recommendWindow.title("Settings")
 
         def addDependencyLevel():
             depList.addItem(depList.widgetDict["depEntry"].get(),depList.widgetDict["depEntry"].get())
@@ -474,7 +476,7 @@ class SettingsPage():
          
 
         # Creating a list for dependency priority
-        depList = ListDict(recommendWindow,0,1)
+        depList = ListDict(self.recommendWindow,0,1)
         depList.dict = homepage.depPriorityDict.copy() # Copying dependency priority from homepage 
         depList.refreshListbox()
         depList.initialiseTitle("Dependency Priority:")
@@ -483,7 +485,7 @@ class SettingsPage():
         depList.initialiseButton("depDeleteButton","Delete dependency",removeDependencyLevel)
 
         # Creating a list for resolvers
-        resolversList = ListDict(recommendWindow,1,1)
+        resolversList = ListDict(self.recommendWindow,1,1)
         resolversList.dict = homepage.resolversDict.copy()
         resolversList.refreshListbox()
         resolversList.initialiseTitle("Resolvers")
@@ -491,6 +493,18 @@ class SettingsPage():
         resolversList.initialiseButton("addName","Add name",addResolverName)
         resolversList.initialiseButton("addTags","Add tags",addResolverTags)
         resolversList.initialiseButton("deleteButton","Delete resolver",removeResolver)
+
+        def recOrderButtonFunc():
+            try:
+                recommendOrderFunc()
+            except:
+                ...
+            self.recommendWindow.destroy()
+
+
+        # Creating button to query materials
+        queryButton = Button(self.recommendWindow,text="Recommend order", command=recOrderButtonFunc)
+        queryButton.grid(row=0,column=2)
 
 class MaterialConstructor:
     
