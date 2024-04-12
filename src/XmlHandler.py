@@ -48,7 +48,7 @@ class XmlHandler:
                 # Checking to see if a material with the same name exists in materialNameDict
                 if material.name in materialNameDict: 
                     Debug.printLowPriority("Material ",material.name," already exists")
-                    raise Exception
+                    # raise Exception
                 else:
                     # If a material with this name does not exist then adds material to dictionary with no issues
                     materialNameDict[material.name] = material

@@ -206,9 +206,12 @@ class Homepage:
             This function will import materials to materialList
             """
 
-            path = self.materialList.widgetDict["pathEntry"].get()
+            paths = self.materialList.widgetDict["pathEntry"].get()
+            print(paths)
+            paths = paths.split(",")
+            print(paths)
 
-            materials = XmlHandler.parseXmlFiles([path])
+            materials = XmlHandler.parseXmlFiles(paths)
 
             for material in materials:
                 if self.materialList.dict.get(material.name) is None:
