@@ -66,7 +66,7 @@ class Homepage:
                     self.selectedMaterials.addItem(material.name,material)
                 self.selectedMaterials.refreshListbox()
 
-            settingsPage = SettingsPage(self, recommendOrderFunc)
+            recommendOrderPage = RecommendOrderPage(self, recommendOrderFunc)
             
             
 
@@ -268,6 +268,7 @@ class QueryPage:
             clause = Clause()       
 
             clause.addDependencyLevels(list(depLevelList.dict.values()))
+            depLevelList.clear()
 
             for var in varValues:    
                 clause.addVariable(var)
@@ -335,7 +336,7 @@ class QueryPage:
         clauseList.initialiseTitle("Clauses in Query")
         clauseList.initialiseLabel("nameLabel","Enter clause name:")
         clauseList.initialiseEntry("clauseName")
-        clauseList.initialiseButton("addClauses","Add clause",addClauseToQuery)
+        clauseList.initialiseButton("addClauses","Create clause",addClauseToQuery)
         clauseList.initialiseDeleteButton()
 
         varList = ListDict(queryWindow,1,2)
@@ -413,7 +414,7 @@ class QueryPage:
 
         depLevelList = ListDict(queryWindow,2,2)
         copyDepLevelsFromMaster() # Making sure it starts with all the dep levels from the master class
-        depLevelList.initialiseTitle("Dependency Levels of Query")
+        depLevelList.initialiseTitle("Dependency Levels of Clause")
         depLevelList.initialiseLabel("entryLabel","Enter dependency level:")
         depLevelList.initialiseEntry("depLevelEntry")
         depLevelList.initialiseButton("addDepLevel","Add dependency level",addDepLevelToClause)
@@ -426,7 +427,7 @@ class QueryPage:
         queryConstructorLabel.grid(column=1,row=1)
         
 
-class SettingsPage():
+class RecommendOrderPage():
     """
     A settings page opened before materials are queried, recommendOrderFunc is the function that recommendsOrder and sets materials in homepage
     """
