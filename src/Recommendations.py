@@ -95,62 +95,19 @@ def recommendOrder(materials : [Material], dependencyPriority : [str], resolvers
             hasDependencies.append(material)
 
     dependencyWeb = createDependencyWeb(hasDependencies, dependencyPriority, resolvers)
-    symbolic_dependencyWeb = Array('symbolic_depWeb', IntSort(), IntSort())
-    for i in range(len(dependencyWeb)):
-        for j in range(len(dependencyWeb[0])):
-            symbolic_dependencyWeb = Store(symbolic_dependencyWeb, len(dependencyWeb)*i+j, dependencyWeb[i][j])
 
-    validSets = [[index] for index in range(0,len(hasDependencies))]
-    for setLength in range(0,len(dependencyWeb)-1):
-        validSets = findValidOrders(symbolic_dependencyWeb,5,validSets)
+    # An array of all the materials that each material must be after
+    afterArray = []
+    for materialIndex in range(0,len(dependencyWeb)):
+        materialAfterArray = [] # The after array for a single material
+        for index in range(0,len(dependencyWeb)):
+            if dependencyWeb[materialIndex][index] < dependencyWeb[index][materialIndex]: # If this is true then the material represented by materialIndex must come after the material represented by index
+                materialAfterArray.append(index)
 
-    order = noDependencies + [hasDependencies[index] for index in validSets[0]]        
+        afterArray.append(materialAfterArray)
 
-    return order
+    print(afterArray)
 
-    
-
-
-def findValidOrders(symbolic_dependencyWeb : [[int]], l, validSets : [[int]]) -> [[int]]:
-    """
-    Finds valid orders for n materials, takes a set of valid orders for n-1 materials and uses these to help find new sets of orders and a dependencyWeb
-
-    Params:
-    - dependencyWeb : A dependency web for a set of materials 
-    - l : length of symbolic_dependencyWeb
-    - validSets : A set of valid orders to learn a subset of materials, uses these and finds valid orders that have an additional material in. The materials in an order are represented by the index of the material in the dependencyWeb
-
-    Returns:
-    A set of new valid orders : [[int]]
-    """
-
-    newValidSets = []
-
-    for set in validSets:
-        solver = Solver()
-
-        order = [Int(f'{index}') for index in range(len(set) + 1)] # Creating a new list for the solver
-        for index in range(0, len(order)):
-            solver.add(order[index] >= 0, order[index] < l)
-        solver.add(Distinct(order))
-        for index in range(0,len(set)): # Setting all items in the list apart from the first to the set currently being looked at
-            solver.add(order[index + 1] == set[index])
-
-        for i in range(0, len(order)):
-           solver.add(symbolic_dependencyWeb[order[0] * l + order[i]] >= symbolic_dependencyWeb[order[i] * l + order[0]])
-
-        while str(solver.check()) == 'sat':
-            model = solver.model()
-
-            newSetValues = [model[i].as_long() for i in order]
-            newValidSets.append(newSetValues)
-            solver.add(order[0] != model[order[0]])
-
-    return newValidSets
-
-
-        
-        
 
 
 
