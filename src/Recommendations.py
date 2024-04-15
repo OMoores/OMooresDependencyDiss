@@ -3,7 +3,7 @@ from src.Material import Material
 from src.Query import *
 from z3 import *
 
-def recommendOrder(materials : [Material], dependencyPriority : [str], resolvers = []) -> [Material]:
+def oldrecommendOrder(materials : [Material], dependencyPriority : [str], resolvers = []) -> [Material]:
     """
     Takes a set of materials and recommends an order to learn the materials in based of the materials 
     dependencies and the priority of the dependency levels
@@ -65,6 +65,83 @@ def recommendOrder(materials : [Material], dependencyPriority : [str], resolvers
     return return_materials
 
 
+def recommendOrder(materials : [Material], dependencyPriority : [str], resolvers = []) -> [Material]:
+    """
+    Takes a set of materials and recommends an order to learn the materials in based of the materials 
+    dependencies and the priority of the dependency levels
+
+    The first item in the recommendation is the first to learn the last item is the last
+    
+    Does this using the z3 SAT solver
+
+    Params:
+    materials : A set of materials 
+    dependencyPriority : A list of dependency levels in order of importance
+    resolvers : A set of resolvers in the form [[None, tag1, tag2],["Name"]]
+
+    Returns:
+    A set of materials in a recommended order
+    """
+
+    # Add materials with no dependencies to be first in order
+    order = []
+    toAddToOrder = [] # Materials that have dependencies and need to be ordered
+
+    # Finding materials with no dependencies and adding them to start of order
+    for material in materials:
+        if len(material.dependencies) == 0:
+            order.append(material)
+        else:
+            toAddToOrder.append(material)
+
+    dependencyWeb = createDependencyWeb(toAddToOrder, dependencyPriority, resolvers)
+
+    # An array of all the materials that each material must be after -> If the array is [[1,2]] then material 0 must come after 1 and 2
+    afterArrays = []
+    for materialIndex in range(0,len(dependencyWeb)):
+        materialAfterArray = [] # The after array for a single material
+        for index in range(0,len(dependencyWeb)):
+            if dependencyWeb[materialIndex][index] < dependencyWeb[index][materialIndex]: # If this is true then the material represented by materialIndex must come after the material represented by index
+                materialAfterArray.append(index)
+        afterArrays.append(materialAfterArray)
+
+    # Using z3 to create an order
+    solver = Solver()
+    # Making a symbolic reperesentation of each afterArray for each material
+    symbolic_positionArray = [Int(f'pos_{i}') for i in range(len(afterArrays))] # Stores the position of each material in the order
+    
+    # Making sure each item in the position array is unique and within bounds
+    for i in range(len(symbolic_positionArray)):
+        solver.add(symbolic_positionArray[i] >= 0, symbolic_positionArray[i] < len(symbolic_positionArray))
+    solver.add(Distinct(symbolic_positionArray))
+
+    for index in range(len(afterArrays)):
+        for material in range(len(afterArrays[index])): # Setting "material must be after materials in its after array" constraints
+            solver.add(symbolic_positionArray[index] > symbolic_positionArray[afterArrays[index][material]])
+
+    solver.check()
+    model = solver.model()
+    positionValues = [model[i].as_long() for i in symbolic_positionArray]
+
+    # Adding items to order using position values
+    newOrder = [None for i in range(len(toAddToOrder))] 
+    for index in range(len(positionValues)):
+        newOrder[positionValues[index]] = toAddToOrder[index]
+
+    order = order + newOrder
+
+    return order
+
+
+
+        
+
+    
+    
+        
+                       
+
+
 
 
 
@@ -119,10 +196,9 @@ def createDependencyWeb(materials : [Material], dependencyPriority : [str], reso
     dependencyPriority : A list of dependency levels in order of importance
 
     Returns:
-    A list of lists shwoing the dependency level of each material on every other material in the list
-
-    [[None,requires,recommends],[requires,None,recommends],[requires,requires,None]] Example return. [a][b] -> access mat a dependency on mat b. 
-    Only includes materials in original material list in web
+    A list of lists showing the dependency priority of each material on every other material.
+    Only includes material in the original set of material.
+    [[0,1,2],[2,2,1],[2,2,2]] Example return, each number represents a position in dependency priority and if there is no indirect relationship then the number is the len(dependencyPriority).
     """
     
     web = []

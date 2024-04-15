@@ -1,1 +1,0 @@
-<materials><material><fileName>mat1</fileName><tags /><dependencies><requires><OR><material>mat2</material><material>mat3</material></OR></requires></dependencies></material><material><fileName>mat2</fileName><tags><tag>tag2</tag></tags><dependencies /></material><material><fileName>mat3</fileName><tags><tag>tag2</tag><tag>tag1</tag></tags><dependencies /></material></materials>
