@@ -84,31 +84,53 @@ def recommendOrder(materials : [Material], dependencyPriority : [str], resolvers
     """
 
     # Add materials with no dependencies to be first in order
-    noDependencies = []
-    hasDependencies = [] # Materials that have dependencies and need to be ordered
+    order = []
+    toAddToOrder = [] # Materials that have dependencies and need to be ordered
 
-    # Finding materials with no dependencies
+    # Finding materials with no dependencies and adding them to start of order
     for material in materials:
         if len(material.dependencies) == 0:
-            noDependencies.append(material)
+            order.append(material)
         else:
-            hasDependencies.append(material)
+            toAddToOrder.append(material)
 
-    dependencyWeb = createDependencyWeb(hasDependencies, dependencyPriority, resolvers)
+    dependencyWeb = createDependencyWeb(toAddToOrder, dependencyPriority, resolvers)
 
-    # An array of all the materials that each material must be after
-    afterArray = []
+    # An array of all the materials that each material must be after -> If the array is [[1,2]] then material 0 must come after 1 and 2
+    afterArrays = []
     for materialIndex in range(0,len(dependencyWeb)):
         materialAfterArray = [] # The after array for a single material
         for index in range(0,len(dependencyWeb)):
             if dependencyWeb[materialIndex][index] < dependencyWeb[index][materialIndex]: # If this is true then the material represented by materialIndex must come after the material represented by index
                 materialAfterArray.append(index)
+        afterArrays.append(materialAfterArray)
 
-        afterArray.append(materialAfterArray)
+    # Using z3 to create an order
+    solver = Solver()
+    # Making a symbolic reperesentation of each afterArray for each material
+    symbolic_positionArray = [Int(f'pos_{i}') for i in range(len(afterArrays))] # Stores the position of each material in the order
+    
+    # Making sure each item in the position array is unique and within bounds
+    for i in range(len(symbolic_positionArray)):
+        solver.add(symbolic_positionArray[i] >= 0, symbolic_positionArray[i] < len(symbolic_positionArray))
+    solver.add(Distinct(symbolic_positionArray))
 
-    print(afterArray)
+    for index in range(len(afterArrays)):
+        for material in range(len(afterArrays[index])): # Setting "material must be after materials in its after array" constraints
+            solver.add(symbolic_positionArray[index] > symbolic_positionArray[afterArrays[index][material]])
 
+    solver.check()
+    model = solver.model()
+    positionValues = [model[i].as_long() for i in symbolic_positionArray]
 
+    # Adding items to order using position values
+    newOrder = [None for i in range(len(toAddToOrder))] 
+    for index in range(len(positionValues)):
+        newOrder[positionValues[index]] = toAddToOrder[index]
+
+    order = order + newOrder
+
+    return order
 
 
 
