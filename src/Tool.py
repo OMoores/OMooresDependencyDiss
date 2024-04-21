@@ -210,7 +210,7 @@ class Homepage:
             paths = self.materialList.widgetDict["pathEntry"].get()
             paths = paths.split(",")
 
-            materials = XmlHandler.parseXmlFiles(paths)
+            materials = XmlHandler.parseXmlFiles(paths,list(self.materialList.dict.values()))
 
             for material in materials:
                 if self.materialList.dict.get(material.name) is None:
@@ -256,7 +256,7 @@ class QueryPage:
         
 
         def addVarToClause():
-            varName = varList.widgetDict["varName"].get()
+            varName = varList.widgetDict["varEntry"].get()
             varValue = varList.widgetDict["varEntry"].get().split(",")
 
             varList.addItem(varName,varValue)
@@ -341,8 +341,6 @@ class QueryPage:
 
         varList = ListDict(queryWindow,1,2)
         varList.initialiseTitle("Variables in Clause")
-        varList.initialiseLabel("nameLabel","Enter variable name:")
-        varList.initialiseEntry("varName")
         varList.initialiseLabel("entryLabel","Enter variable:")
         varList.initialiseEntry("varEntry")
         varList.initialiseButton("addVar","Add variable",addVarToClause)
@@ -436,7 +434,7 @@ class RecommendOrderPage():
         root = homepage.root
 
         self.recommendWindow = Toplevel(root)
-        self.recommendWindow.title("Settings")
+        self.recommendWindow.title("Recommend order")
 
         def addDependencyLevel():
             depList.addItem(depList.widgetDict["depEntry"].get(),depList.widgetDict["depEntry"].get())

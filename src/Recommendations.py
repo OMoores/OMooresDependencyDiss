@@ -87,23 +87,25 @@ def recommendOrder(materials : [Material], dependencyPriority : [str], resolvers
     order = []
     toAddToOrder = [] # Materials that have dependencies and need to be ordered
 
-    # Finding materials with no dependencies and adding them to start of order
-    for material in materials:
-        if len(material.dependencies) == 0:
-            order.append(material)
+    dependencyWeb = createDependencyWeb(materials, dependencyPriority, resolvers)
+
+    # Adding materials with no relation to other materials to order
+    for index in range(0,len(dependencyWeb)):
+        if all(element == len(dependencyPriority) for element in dependencyWeb[index]): # Testing to see if items are all same
+            order.append(materials[index])
         else:
-            toAddToOrder.append(material)
+            toAddToOrder.append(materials[index])
 
     dependencyWeb = createDependencyWeb(toAddToOrder, dependencyPriority, resolvers)
 
     # An array of all the materials that each material must be after -> If the array is [[1,2]] then material 0 must come after 1 and 2
     afterArrays = []
     for materialIndex in range(0,len(dependencyWeb)):
-        materialAfterArray = [] # The after array for a single material
+        afterArray = [] # The after array for a single material
         for index in range(0,len(dependencyWeb)):
             if dependencyWeb[materialIndex][index] < dependencyWeb[index][materialIndex]: # If this is true then the material represented by materialIndex must come after the material represented by index
-                materialAfterArray.append(index)
-        afterArrays.append(materialAfterArray)
+                afterArray.append(index)
+        afterArrays.append(afterArray)
 
     # Using z3 to create an order
     solver = Solver()

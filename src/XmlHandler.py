@@ -1,14 +1,16 @@
 
+from os import replace
 from src.Material import *
 from src.Debug import *
 import xml.etree.ElementTree as etree
 
-
 class XmlHandler:
 
-    def parseXmlFiles(xmlPathList : [str]) -> [Material]:
+    def parseXmlFiles(xmlPathList : [str], materials = []) -> [Material]:
         """
         Takes a list of filepaths of xml files and returns a set of materials with their names, tags and dependencies set to the correct values 
+        Takes existing materials to allow dependencies to be upated
+        
 
         Params:
         - xmlPathList : A list of filepaths
@@ -17,10 +19,14 @@ class XmlHandler:
         A list of Materials
         """
 
+
         # A dictionary of material names and its Material object
         materialNameDict = {}
         """material name : Material object"""
-
+        if len(materials) > 0:
+            for material in materials:
+                materialNameDict[material.name] = material            
+            
         # Look at every xml file and create a lists of every material
         for path in xmlPathList:
 
@@ -48,7 +54,14 @@ class XmlHandler:
                 # Checking to see if a material with the same name exists in materialNameDict
                 if material.name in materialNameDict: 
                     Debug.printLowPriority("Material ",material.name," already exists")
-                    # raise Exception
+
+                    if "#placeholder" in materialNameDict[material.name].tags:
+                        
+                        
+                        # Replacing placeholders attributes with new materials attributes
+                        materialNameDict[material.name].tags = material.tags
+                    else:
+                        raise Exception
                 else:
                     # If a material with this name does not exist then adds material to dictionary with no issues
                     materialNameDict[material.name] = material
@@ -167,7 +180,7 @@ class XmlHandler:
             if dictClone.get(matName) is not None:
                 formattedOperation.append(dictClone[matName])
             else:
-                dictClone[matName] = Material(matName) # Creating a placeholder material if a material with the name in the dependency does not exist
+                dictClone[matName] = Material(matName,["#placeholder"]) # Creating a placeholder material if a material with the name in the dependency does not exist, has the tag #placeholder
                 formattedOperation.append(dictClone[matName])
             return [formattedOperation, dictClone]
         else:
