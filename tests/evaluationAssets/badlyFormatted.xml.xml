@@ -1,0 +1,1 @@
+<materials><material><fileNam>mat1</fileNam><tags /><dependencies><req><material>mat2</material></req></dependencies></material><material><fileName>mat2</fileName><tags /><dependencies /></material></materials>
