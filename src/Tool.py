@@ -1,9 +1,11 @@
+from tracemalloc import start
 from src.XmlHandler import XmlHandler
 from tkinter import *
 from src.GUI.ListDict import ListDict
 from src.GUI.Operation import Operation
 from src.Query import *
 from src.Recommendations import *
+from time import perf_counter
 
 
 def returnMaterialWithTags(materials : [Material], tags : [str]):
@@ -58,8 +60,10 @@ class Homepage:
         def getRecommendOrder():
 
             def recommendOrderFunc():
+                startTime = perf_counter()
                 recommendedOrder = recommendOrder(list(self.selectedMaterials.dict.values()),list(self.depPriorityDict.values()),list(self.resolversDict.values()))
-
+                endTime = perf_counter()
+                print("Ordering took ",endTime-startTime)
                 self.selectedMaterials.dict = {}
 
                 for material in recommendedOrder:
