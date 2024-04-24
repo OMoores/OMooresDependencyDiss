@@ -33,7 +33,7 @@ def oldrecommendOrder(materials : [Material], dependencyPriority : [str], resolv
         solver.add(order[i] >= 0, order[i] < len(order))
     solver.add(Distinct(order))
 
-    # Making symbolic dependeny web and constraining its values to those in depWeb
+    # Making symbolic dependeny web and constraining its values to those in depWebf
     symbolic_depWeb = Array('symbolic_depWeb', IntSort(), IntSort())
 
     for i in range(len(depWeb)):
@@ -163,6 +163,7 @@ def isRecommendationValid(recommendation : [Material], dependencyPriority : [str
     A boolean representing if the recommendation is valid
     """
 
+
     if depWeb == None:
         depWeb = createDependencyWeb(recommendation, dependencyPriority,resolvers)
 
@@ -176,7 +177,7 @@ def isRecommendationValid(recommendation : [Material], dependencyPriority : [str
             BdepA = depWeb[matBIndex][matAIndex]
 
             # If B depends on A more then A depends on B recommendation is not valid
-            if not AdepB <= BdepA:
+            if AdepB < BdepA:
                 return False
             
     return True

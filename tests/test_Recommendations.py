@@ -50,11 +50,11 @@ class TestRecommendations(unittest.TestCase):
         """
         dependencyPriority = ["requires","recommends","enhancedBy"]
 
-        validSet1 = [self.Further_Maths,self.Basic_Maths,self.Addition,self.Subtraction]
+        validSet1 = [self.Subtraction,self.Addition,self.Basic_Maths,self.Further_Maths]
         self.assertTrue(isRecommendationValid(validSet1,dependencyPriority,resolvers=[])) # Testing it works with a set with no OR operations
 
 
-        orSet1 = [self.Mechanics,self.Physics,self.Basic_Maths]
+        orSet1 = [self.Basic_Maths,self.Physics,self.Mechanics]
         self.assertTrue(isRecommendationValid(orSet1,dependencyPriority,resolvers=[[None,"Physics"]]))
         self.assertTrue(isRecommendationValid(orSet1,dependencyPriority,resolvers=[[None,"Maths"]]))
 
@@ -72,8 +72,7 @@ class TestRecommendations(unittest.TestCase):
         material1Set = [self.Quantum_Physics,self.Addition,self.Subtraction,self.Mechanics,self.Basic_Maths,self.Further_Maths,self.Engineering]
         resolvers = [[None,"Physics"]]
         test1Set = recommendOrder(material1Set, dependencyPriority,resolvers)
-     
-        #self.assertTrue(isRecommendationValid(list(reversed(test1Set)),dependencyPriority,resolvers = resolvers))
+        self.assertTrue(isRecommendationValid(test1Set,dependencyPriority,resolvers = resolvers))
 
 
         
