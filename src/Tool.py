@@ -214,7 +214,11 @@ class Homepage:
             paths = self.materialList.widgetDict["pathEntry"].get()
             paths = paths.split(",")
 
+            startTime = perf_counter()
             materials = XmlHandler.parseXmlFiles(paths,list(self.materialList.dict.values()))
+            endTime = perf_counter()
+            print("Importing material took ",endTime-startTime)
+
 
             for material in materials:
                 if self.materialList.dict.get(material.name) is None:
@@ -293,7 +297,10 @@ class QueryPage:
             for clause in list(clauseList.dict.values()):
                 query.addClause(clause)
 
+            startTime = perf_counter()
             queryResult = queryDependencies(materials,query,resolvers)
+            endTime = perf_counter()
+            print("Query time: ",endTime-startTime)
 
             for material in queryResult:
                 queryResultList.addItem(material.name,material)

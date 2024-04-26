@@ -187,7 +187,6 @@ class Material:
                 # Checks if negation occurs in any of the resolvers
                 for tag in resolver[i][1:]:
                     if tag[0] == "-":
-                        print(tag[1:])
                         if not Utility.isAinB(tag[1:],self.tags): # The negated tag is not present so this is valid
 
                             if len(resolver[i][1:]) == 1: # If the negated tag is the only resolver then this resolution level is true => resolver would be [[None,-tag],...]
@@ -264,7 +263,7 @@ def extractOperation(operation, dependencyLevel, resolvers : [[str]] = []) -> [[
 
         if operation1Materials == None and operation2Materials == None:
             # Returning both materials as if the OR was an AND
-            print("Could not resolver operation: ", operation, " with resolvers: ", resolvers)
+            Debug.printLowPriority("Could not resolver operation: ", operation, " with resolvers: ", resolvers)
             return extractOperation(operation[1],dependencyLevel, resolvers) + extractOperation(operation[2],dependencyLevel,resolvers) # If cannot resolve then returns both materials
         elif operation1Materials == None:
             return operation2Materials[1] # Item 0 return from resolve operations is the resolution level

@@ -1,0 +1,13 @@
+<materialz>
+<material><fileName>T1.1 - Motivation: Data Breaches</fileName><tags><tag>slides</tag><tag>beginner</tag><tag>intermediate</tag><tag>advanced</tag><tag>ug</tag><tag>msc</tag><tag>professional</tag></tags><dependencies><recommends><material>T1.2 - Information is Beautiful</material></recommends></dependencies></material>
+<material><fileName>T1.2 - Information is Beautiful</fileName><tags><tag>website</tag><tag>https://informationisbeautiful.net/visualizations/worlds-biggest-data-breaches-hacks/</tag></tags><dependencies /></material>
+<material><fileName>T1.3 - Secure Programming: Introduction</fileName><tags><tag>slides</tag><tag>beginner</tag><tag>intermediate</tag><tag>advanced</tag><tag>ug</tag><tag>msc</tag><tag>professional</tag></tags><dependencies><depends><OR><material>T1.4 - Python "Self Study"</material><material>T1.5 - Static Analysis - Introduction</material></OR></depends></dependencies></material>
+<material><fileName>T1.3 - ECM1400: Programming in Python</fileName><tags><tag>module</tag></tags><dependencies></dependencies></material>
+<material><fileName>T1.4 - Python "Self Study"</fileName><tags /><dependencies /></material>
+<material><fileName>T1.5 - Static Analysis - Introduction</fileName><tags><tag>intermediate</tag><tag>advanced</tag><tag>ug</tag><tag>msc</tag><tag>professional</tag></tags><dependencies><depends><material>T1.4 - Python "Self Study"</material></depends></dependencies></material>
+<material><fileName>T1.6 - Static Analysis - Deep Dive</fileName><tags><tag>advanced</tag><tag>msc</tag></tags><dependencies><depends><AND><material>T1.4 - Python "Self Study"</material><OR><material>T1.7 - ECM2418 Computer Languages and Representations</material><AND><material>T1.8 - ECM1415 Discrete Mathematics for Computer Science</material><material>T1.9 - ECM2433 The C Family</material></AND></OR></AND></depends><suggests><material>T1.10 - Flemming Nielson, Hanne Riis Nielson, Chris Hankin: "Principles of Program Analysis"</material></suggests></dependencies></material>
+<material><fileName>T1.7 - ECM2418 Computer Languages and Representations</fileName><tags><tag>module</tag></tags><dependencies><depends><material>T1.8 - ECM1415 Discrete Mathematics for Computer Science</material></depends></dependencies></material>
+<material><fileName>T1.8 - ECM1415 Discrete Mathematics for Computer Science</fileName><tags><tag>module</tag></tags><dependencies /></material>
+<material><fileName>T1.9 - ECM2433 The C Family</fileName><tags><tag>module</tag></tags><dependencies /></material>
+<material><fileName>T1.10 - Flemming Nielson, Hanne Riis Nielson, Chris Hankin: "Principles of Program Analysis"</fileName><tags><tag>book</tag></tags><dependencies /></material>
+</materialz>
