@@ -83,7 +83,7 @@ class XmlHandler:
         A material with the name and tags from the child input
         """
         # Name defaults to id
-        mat = Material(Material.nextId)
+        mat = Material("unnamed")
 
         # Setting name
         try:

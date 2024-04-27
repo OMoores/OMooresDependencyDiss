@@ -12,7 +12,6 @@ class Material:
         - tags
         - dependencies
     """
-    nextId = 0
 
     def __init__(self, name : str, tags : [str] = []):
         """
@@ -22,7 +21,6 @@ class Material:
         """
 
         self.name = self.setName(name)
-        self.id = Material.nextId
         self.tags = [] # Initialise tags variable
         self.addTags(tags)
         self.dependencies = [] 
@@ -32,10 +30,9 @@ class Material:
             [dependency name, dependency level]
         """
 
-        Debug.printLowPriority("Material being initialised, name: ",self.name,", id: ",self.id,", tags: ",self.tags,", dependencies: ",self.dependencies)
+        Debug.printLowPriority("Material being initialised, name: ",self.name,", tags: ",self.tags,", dependencies: ",self.dependencies)
 
 
-        Material.nextId += 1
 
  
 
