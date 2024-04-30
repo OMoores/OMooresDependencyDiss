@@ -1,0 +1,19 @@
+<materials>
+    <material>
+        <fileName>material1</fileName>
+        <tags>
+            <tag>characteristic1</tag>
+        </tags>
+        <dependencies>
+            <relationship1><material>material2</material></relationship1>
+            <relationship2>
+                <OR>
+                    <AND>
+                        <material>material5</material><material>material4</material>
+                    </AND>
+                    <material>material3</material>
+                </OR>
+            </relationship2>
+        </dependencies>
+    </material>
+</materials>
